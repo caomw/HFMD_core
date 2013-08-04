@@ -1,0 +1,12 @@
+/usr/local/lib/libHFMD_core.so.1.0.0
+/usr/local/lib/libHFMD_core.so.1
+/usr/local/lib/libHFMD_core.so
+/usr/local/include/HFMD_core/CConfig.h
+/usr/local/include/HFMD_core/CDetectionResult.h
+/usr/local/include/HFMD_core/CRForest.h
+/usr/local/include/HFMD_core/HoG.h
+/usr/local/include/HFMD_core/globjloader.h
+/usr/local/include/HFMD_core/CDataset.h
+/usr/local/include/HFMD_core/CPatch.h
+/usr/local/include/HFMD_core/CRTree.h
+/usr/local/include/HFMD_core/util.h
