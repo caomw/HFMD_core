@@ -2,16 +2,40 @@
 
 CGlObjLoader::CGlObjLoader(char* fname)
 {
-//    _left = 0.0;		/* ortho view volume params */
-//    _right = 0.0;
-//    _bottom = 0.0;
-//    _top = 0.0;
-//    _zNear = 0.1;
-//    _zFar = 10.0;
-//    fovy = 45.0;
-//    prev_z = 0;
+  _left = 0.0;		/* ortho view volume params */
+  _right = 0.0;
+  _bottom = 0.0;
+  _top = 0.0;
+  _zNear = 0.1;
+  _zFar = 10.0;
+  fovy = 45.0;
+  prev_z = 0;
 
-    //mode = 0;		/* viewing mode */
+  mode = 0;		/* viewing mode */
+
+  pmodel = NULL;
+
+  light_ambient[0] = 0.0;
+  light_ambient[1] = 0.0;
+  light_ambient[2] = 0.0;
+  light_ambient[3] = 1.0;
+
+  for(int i = 0; i<4; ++i){
+    light_diffuse[i] = 1.0;
+    light_specular[i] = 1.0;
+    light_position[i] = 1.0;
+    
+    mat_ambient[i] = 0.7;
+    mat_diffuse[i] = 0.8;
+    mat_specular[i] = 1.0;
+}
+
+  light_position[3] = 0.0;
+  mat_ambient[3] = 1.0;
+  mat_diffuse[3] = 1.0;
+  high_shininess[0] = 100.0;
+  
+  
 
 //     light_ambient[4] = { 1.0, 1.0, 1.0, 1.0 };
 //     light_diffuse[4] = { 1.0, 1.0, 1.0, 1.0 };

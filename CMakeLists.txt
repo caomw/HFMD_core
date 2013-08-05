@@ -1,5 +1,8 @@
 # CMakeのバージョン
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+
+SET(CMAKE_CXX_COMPILER g++)
+
 # リリースビルド用オプション
 SET(CMAKE_CXX_FLAGS_RELEASE "-Wall -O2 -fpermissive -fPIC")
 # デバッグビルド用オプション
@@ -31,7 +34,7 @@ INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
 # 共有ライブラリとしてビルド
 ADD_LIBRARY(HFMD_core SHARED src/CConfig.cpp src/CRForest.cpp src/HoG.cpp src/globjloader.cpp src/CDataset.cpp src/CRTree.cpp src/util.cpp)
 
-TARGET_LINK_LIBRARIES(HFMD_core ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+TARGET_LINK_LIBRARIES(HFMD_core ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} glm jpeg png ${GLUT_LIBRARIES})
 
 # バージョン番号の適用
 SET_TARGET_PROPERTIES(HFMD_core PROPERTIES VERSION ${serial} SOVERSION ${soserial})

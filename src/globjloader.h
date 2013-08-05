@@ -41,23 +41,23 @@ private:
     double roll, pitch, yaw;
 
     /* Ortho (if used) */
-//    double _left;		/* ortho view volume params */
-//    double _right;
-//    double _bottom;
-//    double _top;
-//    double _zNear;
-//    double _zFar;
-//    double fovy;
-//    double prev_z;
+    double _left;		/* ortho view volume params */
+    double _right;
+    double _bottom;
+    double _top;
+    double _zNear;
+    double _zFar;
+    double fovy;
+    double prev_z;
 
-    double _left = 0.0;		/* ortho view volume params */
-    double _right = 0.0;
-    double _bottom = 0.0;
-    double _top = 0.0;
-    double _zNear = 0.1;
-    double _zFar = 10.0;
-    double fovy = 45.0;
-    double prev_z = 0;
+    //    double _left = 0.0;		/* ortho view volume params */
+    //    double _right = 0.0;
+    //double _bottom = 0.0;
+    //double _top = 0.0;
+    //double _zNear = 0.1;
+    //double _zFar = 10.0;
+    //double fovy = 45.0;
+    //double prev_z = 0;
 
 
     /* Modelview Matrix */
@@ -70,9 +70,9 @@ private:
     void invertMatrix(const GLdouble * m, GLdouble * out);
 
     /* Global Variables for this app */
-    GLMmodel *pmodel = NULL;	/* the loaded model */
+    GLMmodel *pmodel;	/* the loaded model */
     char filename[256];
-    GLuint mode = 0;		/* viewing mode */
+    GLuint mode;		/* viewing mode */
 
     int ww, wh;			/* window width and height */
 //    //int wireframe = 0;		/* Draw modes */
@@ -93,15 +93,15 @@ private:
 //    int lighting = 1;
 
     /* Lighting Variables */
-    GLfloat light_ambient[4] = { 0.0, 0.0, 0.0, 1.0 };
-    GLfloat light_diffuse[4] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat light_specular[4] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat light_position[4] = { 1.0, 1.0, 1.0, 0.0 };
+    GLfloat light_ambient[4];// = { 0.0, 0.0, 0.0, 1.0 };
+    GLfloat light_diffuse[4];// = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat light_specular[4];// = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat light_position[4];// = { 1.0, 1.0, 1.0, 0.0 };
 
-    GLfloat mat_ambient[4] = { 0.7, 0.7, 0.7, 1.0 };
-    GLfloat mat_diffuse[4] = { 0.8, 0.8, 0.8, 1.0 };
-    GLfloat mat_specular[4] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat high_shininess[1] = { 100.0 };
+    GLfloat mat_ambient[4];// = { 0.7, 0.7, 0.7, 1.0 };
+    GLfloat mat_diffuse[4];// = { 0.8, 0.8, 0.8, 1.0 };
+    GLfloat mat_specular[4];// = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat high_shininess[1];//= { 100.0 };
 
     /* Standard Glut interface functions                                     */
     void Reshape(int w, int h);

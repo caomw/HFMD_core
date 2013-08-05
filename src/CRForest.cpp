@@ -378,7 +378,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 #pragma omp for
     // find balance by mean shift
     for(int i = 0; i < classNum; ++i){
-      cv::GaussianBlur(voteImage.at(i),voteImage.at(i), cv::Size(21,21),0);
+      //cv::GaussianBlur(voteImage.at(i),voteImage.at(i), cv::Size(21,21),0);
     }
   }
 
