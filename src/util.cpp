@@ -53,6 +53,7 @@ void loadTrainObjFile(CConfig conf, std::vector<CPosDataset> &posSet)
 
     posSet.resize(modelNum * conf.imagePerTree);
 
+    std::cout << modelNum << std::endl;
     for(int j = 0; j < modelNum; ++j){
         for(int i = 0; i < conf.imagePerTree; ++i){
             CPosDataset posTemp;
@@ -64,8 +65,10 @@ void loadTrainObjFile(CConfig conf, std::vector<CPosDataset> &posSet)
             posTemp.setAngle(tempAngle);
             posTemp.setCenterPoint(cv::Point(320,240));
 
-            posSet[j * i] = posTemp;
+            posSet[j * conf.imagePerTree + i] = posTemp;
+	    ///	    std::cout << posSet[j*coni].getModelPath() << std::endl;
         }
+
     }
     modelList.close();
 }

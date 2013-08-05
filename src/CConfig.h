@@ -126,6 +126,7 @@ public:
     std::string modelListFolder;
     std::string modelListName;
 
+    int modelLearningMode;
 private:
     boost::property_tree::ptree pt;
 

@@ -139,15 +139,18 @@ int CDataset::loadImage(const CConfig &conf){
     return 0;
 }
 
+
 int CDataset::loadImage(const CConfig &conf, const std::string modelName, const CParamset* param){
     cv::Mat *rgbImg, *depthImg;
     //std::cout << rgb << " " << depth << std::endl;
 
     this->img.resize(2);
 
-    std::cout << this->getModelPath() << std::endl;
+    //std::cout << "syuturyoku" << std::endl;
+    //std::cout << this->getModelPath() << std::endl;
 
-    CGlObjLoader obj(this->getModelPath().c_str()); //= new CGlObjLoader(this->getModelPath().c_str());
+    CGlObjLoader obj(this->getModelPath().c_str()); 
+    //= new CGlObjLoader(this->getModelPath().c_str());
     cv::vector<cv::Mat *> tempImage = obj.getAppearance(param->getAngle());
 
     rgbImg = tempImage.at(0);
@@ -163,7 +166,6 @@ int CDataset::loadImage(const CConfig &conf, const std::string modelName, const 
     this->img[1] = depthImg;
 
     //std::cout << depthImg->type() << std::endl;
-
     //delete obj;
 
     imgFlag  = 1;

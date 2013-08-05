@@ -39,8 +39,9 @@ CGlObjLoader::CGlObjLoader(char* fname)
 
     strncpy(filename, fname ,sizeof(filename));	/* get the last arg as the file always */
 
-    //std::cout << "kokomade?" << std::endl;
+ 
     if (!pmodel) {		/* load up the model */
+      //      std::cout << filename << std::endl;
 //#pragma omp critical
         pmodel = glmReadOBJ(filename);
         if (!pmodel) {

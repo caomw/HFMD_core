@@ -2,7 +2,7 @@
 //#include <boost/timer/timer.hpp>
 #include "CRForest.h"
 
-paramHist& paramHist::operator +(const paramHist& obj){
+paramHist& paramHist::operator +(const paramHist& obj){ 
   this->roll += obj.roll;
   this->pitch += obj.pitch;
   this->yaw += obj.yaw;
@@ -57,8 +57,12 @@ void CRForest::growATree(const int treeNum){
   boost::mt19937    gen( treeNum * static_cast<unsigned long>(time(NULL)) );
   //boost::timer t;
 
+
   //loadTrainPosFile(conf, posSet);//, gen);
-  loadTrainObjFile(conf,posSet);
+  if(conf.modelLearningMode)
+    loadTrainObjFile(conf,posSet);
+  else
+    loadTrainPosFile(conf, posSet);
 
   CClassDatabase tempClassDatabase;
   // extract pos features and register classDatabase
@@ -78,23 +82,24 @@ void CRForest::growATree(const int treeNum){
     //cv::Mat test = cv::Mat(640,480);
     //    tempClassDatabase.add(
 
-    cv::Mat tetete;
+    
     tempClassDatabase.add(posSet.at(i).getParam()->getClassName(),cv::Size(),0);
   }
 
   //    std::vector<CPosDataset> tempPosSet(0);
-  //    int currentClass = treeNum % tempClassDatabase.vNode.size();
+  int currentClass = treeNum % tempClassDatabase.vNode.size();
 
   //std::cout << "okashiina" << std::endl;
-  //    for(int i = 0; i < posSet.size(); ++i){
-  //        if(tempClassDatabase.search(posSet.at(i).getClassName()) == currentClass){
-  //            tempPosSet.push_back(posSet.at(i));
-  //            //std::cout << "teketeke" << std::endl;
-  //        }else{
-  //            negSet.push_back(convertPosToNeg2(posSet.at(i)));
-  //            //std::cout << "negneg" << std::endl;
-  //        }
-  //    }
+  if(!conf.modelLearningMode)
+    for(int i = 0; i < posSet.size(); ++i){
+      if(tempClassDatabase.search(posSet.at(i).getClassName()) == currentClass){
+	tempPosSet.push_back(posSet.at(i));
+	//std::cout << "teketeke" << std::endl;
+      }else{
+	negSet.push_back(convertPosToNeg2(posSet.at(i)));
+	//std::cout << "negneg" << std::endl;
+      }
+    }
 
   //posSet = tempPosSet;
 
@@ -112,8 +117,10 @@ void CRForest::growATree(const int treeNum){
 
     //std::cout << posSet.at(i).rgb << std::endl;
     //#pragma omp critical
-    posSet.at(i).loadImage(conf, posSet.at(i).getModelPath(), posSet.at(i).getParam());
-
+    if(conf.modelLearningMode)
+      posSet.at(i).loadImage(conf, posSet.at(i).getModelPath(), posSet.at(i).getParam());
+    else
+      posSet.at(i).loadImage(conf);
     //        if(imgload == -1 && conf.learningMode != 2){
     //            std::cout << "can't load image files" << std::endl;
     //            exit(-1);
@@ -196,7 +203,7 @@ void CRForest::growATree(const int treeNum){
   negPatch.clear();
 
   //    for(int i = 0; i< posSet.size(); ++i){
-  //        cv::namedWindow("test");
+  //        Cv::Namedwindow("Test");
   //        cv::imshow("test", *posSet.at(i).img.at(0));
   //        cv::waitKey(0);
   //        cv::destroyWindow("test");

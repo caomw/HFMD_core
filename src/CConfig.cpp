@@ -373,5 +373,7 @@ int CConfig::loadConfig(const char* filename)
     modelListFolder = *pt.get_optional<std::string>("root.modellistfolder");
     modelListName = *pt.get_optional<std::string>("root.modellistname");
 
+    modelLearningMode = *pt.get_optional<std::string>("root.modellearningmode");
+
     return 0;
 }
