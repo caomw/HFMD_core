@@ -86,7 +86,7 @@ void CRForest::growATree(const int treeNum){
     tempClassDatabase.add(posSet.at(i).getParam()->getClassName(),cv::Size(),0);
   }
 
-  //    std::vector<CPosDataset> tempPosSet(0);
+  std::vector<CPosDataset> tempPosSet(0);
   int currentClass = treeNum % tempClassDatabase.vNode.size();
 
   //std::cout << "okashiina" << std::endl;
@@ -419,7 +419,20 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
   //        }
   //    }
 
-  // create detection result
+  cv::Mat showVoteImage = cv::Mat(voteImage.at(0).rows, voteImage.at(0).cols, CV_8UC1);
+
+  voteImage.at(0).convertTo(showVoteImage, CV_8UC1, 254 * 100);
+
+  cv::namedWindow("test");
+  cv::imshow("test", showVoteImage);
+  cv::namedWindow("test2");
+  cv::imshow("test2", outputImage[0]);
+
+  cv::waitKey(0);
+  cv::destroyWindow("test");
+  
+
+// create detection result
   CDetectionResult detectResult;
   detectResult.voteImage = voteImage;
 
@@ -531,6 +544,10 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 
   return detectResult;
 }
+
+
+
+
 
 // Regression
 void CRForest::regression(std::vector<const LeafNode*>& result, CTestPatch &patch) const{
