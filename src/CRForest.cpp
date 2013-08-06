@@ -233,7 +233,7 @@ void CRForest::loadForest(){
   char buffer[256];
   char buffer2[256];
   std::cout << "loading forest..." << std::endl;
-  for(int i = 0; i < vTrees.size(); ++i){
+  for(unsigned int i = 0; i < vTrees.size(); ++i){
     sprintf(buffer, "%s%03d.txt",conf.treepath.c_str(),i);
     sprintf(buffer2, "%s%s%03d.txt", conf.treepath.c_str(), conf.classDatabaseName.c_str(), i);
     vTrees[i] = new CRTree(buffer, buffer2, conf);
@@ -261,6 +261,8 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
   cv::vector<cv::Mat> voteImage(classNum);//voteImage(classNum);
   //cv::vector<cv::Mat_<std::vector<CParamset> > > voteParam(classNum);
 
+
+  
   std::vector<int> totalVote(classNum,0);
 
   //boost::timer t;
@@ -285,6 +287,8 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
   int imgRow = testSet.img.at(0)->rows;
   int imgCol = testSet.img.at(0)->cols;
 
+  cv::Mat votedVectors = cv::Mat::zeros(imgRow, imgCol, CV_8UC3);
+  
 #pragma omp parallel
   {
 #pragma omp for
@@ -359,6 +363,13 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 		voteParam2.at(cl)[pos.y][pos.x].yaw.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[2]) += v * 10000;
 		//std::cout << result.at(m)->param.at(l).at(n).getAngle() << std::endl;
 		//std::cout << v << std::endl;
+
+		cv::Scalar hanabi= cv::Scalar(rand()%255,rand()%255,rand()%255);
+		// this code is for debug and setting
+		cv::circle(votedVectors,pos,5,hanabi);//cv::Scalar(254,254,254));
+		cv::line(votedVectors,pos,
+			 cv::Point(testPatch[j].getRoi().x,testPatch[j].getRoi().y),
+			 hanabi);///cv::Scalar(245,245,245));
 		totalVote.at(cl) += 1;
 	      }
 
@@ -427,10 +438,13 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
   cv::imshow("test", showVoteImage);
   cv::namedWindow("test2");
   cv::imshow("test2", outputImage[0]);
-
-  cv::waitKey(0);
-  cv::destroyWindow("test");
+  cv::namedWindow("test3");
+  cv::imshow("test3", votedVectors);
+  cv::imwrite("hanabi.png",votedVectors);
   
+  cv::waitKey(0);
+  //cv::destroyWindow("test");
+  //cv::destroyWindow("test2")
 
 // create detection result
   CDetectionResult detectResult;

@@ -34,8 +34,11 @@ INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include")
 # 共有ライブラリとしてビルド
 ADD_LIBRARY(HFMD_core SHARED src/CConfig.cpp src/CRForest.cpp src/HoG.cpp src/globjloader.cpp src/CDataset.cpp src/CRTree.cpp src/util.cpp)
 
-TARGET_LINK_LIBRARIES(HFMD_core ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} glm jpeg png ${GLUT_LIBRARIES})
-
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  TARGET_LINK_LIBRARIES(HFMD_core ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+else(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  TARGET_LINK_LIBRARIES(HFMD_core ${OpenCV_LIBRARIES} ${Boost_LIBRARIES} ${OPENGL_LIBRARIES} glm jpeg png ${GLUT_LIBRARIES})
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 # バージョン番号の適用
 SET_TARGET_PROPERTIES(HFMD_core PROPERTIES VERSION ${serial} SOVERSION ${soserial})
 # 共有ライブラリのインストール指定

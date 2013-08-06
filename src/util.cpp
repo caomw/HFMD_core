@@ -708,6 +708,7 @@ void normarizationCenterPointP(CPosPatch &patch, const CConfig &config){//, cons
 
 //    currentP.x = currentP.x * 10;
     currentP.y *= 1000;
+    currentP.x *= 1000;
     currentP.x /= centerDepth;
     currentP.y /= centerDepth;
 
