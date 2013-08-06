@@ -6,8 +6,8 @@ using namespace std;
 boost::lagged_fibonacci1279 CRTree::genTree = boost::lagged_fibonacci1279();
 
 void CRTree::calcHaarLikeFeature(const cv::Mat &patch, const int* test, double &p1, double &p2) const{
-    float m[6];
-    int angle = test[0];
+  //float m[6];
+  //int angle = test[0];
     double t1,t2,t3,t4;
 
 //    for(int i = 0; i < 8; ++i)
@@ -486,7 +486,7 @@ bool CRTree::saveTree(const char* filename) const {
             out << l << " ";
 
             int containClassNum = 0;
-            for(int i = 0; i < ptLN->pfg.size(); ++i){
+            for(unsigned int i = 0; i < ptLN->pfg.size(); ++i){
                 if(ptLN->pfg.at(i) != 0)
                     containClassNum++;
             }
@@ -497,11 +497,11 @@ bool CRTree::saveTree(const char* filename) const {
             // for(int i = 0; i < ptLN->vCenter.size(); ++i)
             // 	classNum(ptLN->vClass.at(i)) += 1;
 
-            for(int j = 0; j < ptLN->pfg.size(); ++j){
+            for(unsigned int j = 0; j < ptLN->pfg.size(); ++j){
                 if(ptLN->pfg.at(j) != 0){
                     //std::cout << j << std::endl;
                     out << j << " " << ptLN->param.at(j).at(0).getClassName() << " " << ptLN->pfg.at(j) << " " << ptLN->param.at(j).size() << " ";
-                    for(int i = 0; i < ptLN->param.at(j).size(); ++i){
+                    for(unsigned int i = 0; i < ptLN->param.at(j).size(); ++i){
                         out << ptLN->param.at(j).at(i).outputParam();
 
 
@@ -521,7 +521,7 @@ bool CRTree::saveTree(const char* filename) const {
 }
 
 //void CRTree::growTree(vector<vector<CPatch> > &TrainSet, int node , int depth, float pnratio, CConfig conf, boost::mt19937 gen, const std::vector<int> &defaultClass_){
-void CRTree::growTree(std::vector<CPosPatch> &posPatch, std::vector<CNegPatch> &negPatch, int node, int depth, float pnratio, CConfig conf, const std::vector<int> &defaultClass_){
+void CRTree::growTree(std::vector<CPosPatch> &posPatch, std::vector<CNegPatch> &negPatch, int node, unsigned int depth, float pnratio, CConfig conf, const std::vector<int> &defaultClass_){
 
 
     // for(int i = 0; i < posPatch.size(); ++i){
@@ -547,7 +547,7 @@ void CRTree::growTree(std::vector<CPosPatch> &posPatch, std::vector<CNegPatch> &
 
     containClass.clear();
     containClass.resize(nclass);
-    for(int i = 0; i < posPatch.size(); ++i)
+    for(unsigned int i = 0; i < posPatch.size(); ++i)
         containClass.at(classDatabase.search(posPatch.at(i).getClassName()))++;
 
     int remainClass = 0;
@@ -557,7 +557,7 @@ void CRTree::growTree(std::vector<CPosPatch> &posPatch, std::vector<CNegPatch> &
 
     int maxClassNum = 0;
 
-    for(int i = 0; i < containClass.size(); ++i){
+    for(unsigned int i = 0; i < containClass.size(); ++i){
         totalClassNum += containClass.at(i);
         if(maxClassNum < containClass.at(i)){
             maxClassNum = containClass.at(i);
@@ -579,17 +579,17 @@ void CRTree::growTree(std::vector<CPosPatch> &posPatch, std::vector<CNegPatch> &
 
     std::cout << "measure mode " << measureMode << std::endl;
 
-    if(depth < max_depth && negratio < 0.95 && posPatch.size() > conf.min_sample) {
+    if(depth < max_depth && negratio < 0.95 && posPatch.size() > (unsigned int)conf.min_sample) {
         // spilit patches by the binary test
         CTrainSet SetA;
         CTrainSet SetB;
         int test[10];
 
         // Set measure mode for split: 0 - classification, 1 - regression
-        unsigned int measure_mode = 1;
+        //unsigned int measure_mode = 1;
         //if( float(TrainSet[1].size()) / float(TrainSet[0].size()+TrainSet[1].size()) >= 0.05 &&
-        if(depth < max_depth-2 )
-            measure_mode = rand();
+        //if(depth < max_depth-2 )
+        //    measure_mode = rand();
 
         //cout << "MeasureMode " << measure_mode << "depth " << depth << "Pos patches " << TrainSet[0].size() << " Neg Patches " << TrainSet[1].size() << " pnratio " << pnratio  <<endl;
 
@@ -609,20 +609,21 @@ void CRTree::growTree(std::vector<CPosPatch> &posPatch, std::vector<CNegPatch> &
             for(int t=0; t<10; ++t)
                 ptT[t] = test[t];
 
-            double countA = 0;
-            double countB = 0;
+            //double countA = 0;
+            //double countB = 0;
 
             containClassA.clear();
             containClassA.resize(nclass);
             containClassB.clear();
             containClassB.resize(nclass);
 
-            for(int l = 0; l < SetA.posPatch.size(); ++l)
+            for(unsigned int l = 0; l < SetA.posPatch.size(); ++l)
                 containClassA.at(classDatabase.search(SetA.posPatch.at(l).getClassName()))++;
-            for(int l = 0; l < SetB.posPatch.size(); ++l)
+            for(unsigned int l = 0; l < SetB.posPatch.size(); ++l)
                 containClassB.at(classDatabase.search(SetB.posPatch.at(l).getClassName()))++;
 
-            for(int l = 0; l < nclass; ++l)std:cout << "class" << l << " is splitted " << containClassA.at(l) << " " << containClassB.at(l) << std::endl;
+            for(int l = 0; l < nclass; ++l)
+	    cout << "class" << l << " is splitted " << containClassA.at(l) << " " << containClassB.at(l) << endl;
 
             std::cout << "negpatch splitted by " << SetA.negPatch.size() << " " << SetB.negPatch.size() << std::endl;
             // Go left
@@ -664,7 +665,7 @@ void CRTree::makeLeaf(CTrainSet &trainSet, float pnratio, int node) {
     for(int c = 0; c < nclass; ++c)
         patchPerClass.at(c).clear();
 
-    for(int i = 0; i < trainSet.posPatch.size(); ++i){
+    for(unsigned int i = 0; i < trainSet.posPatch.size(); ++i){
         //std::cout << "this is for debug trainset center is " << posPatch.at(i).center << std::endl;
         patchPerClass.at(classDatabase.search(trainSet.posPatch.at(i).getClassName())).push_back(trainSet.posPatch.at(i));
     }
@@ -694,7 +695,7 @@ void CRTree::makeLeaf(CTrainSet &trainSet, float pnratio, int node) {
     for(int i = 0; i < nclass; ++i){
         //ptL->vCenter.at(i).clear();
         ptL->param.at(i).clear();
-        for(int j = 0; j < patchPerClass.at(i).size(); ++j){
+        for(unsigned int j = 0; j < patchPerClass.at(i).size(); ++j){
             //ptL->vCenter.at(i).push_back(patchPerClass.at(i).at(j).getCenterPoint());
             CParamset tParam;
             tParam = patchPerClass.at(i).at(j).getParam();
@@ -1135,7 +1136,7 @@ void CRTree::split(CTrainSet& SetA, CTrainSet& SetB, const CTrainSet& trainSet, 
     SetB.negPatch.clear();
 
     // pos patch
-    for(int i = 0; i < valSet.at(0).size(); ++i){
+    for(unsigned int i = 0; i < valSet.at(0).size(); ++i){
         if(valSet.at(0).at(i).val < t){
             SetA.posPatch.push_back(trainSet.posPatch.at(valSet.at(0).at(i).index));
             //SetA.posPatch.back().getCenterPoint() = trainSet.posPatch.at(valSet.at(0).at(i).index).center;
@@ -1146,7 +1147,7 @@ void CRTree::split(CTrainSet& SetA, CTrainSet& SetB, const CTrainSet& trainSet, 
     }
 
     // neg patch
-    for(int i = 0; i < valSet.at(1).size(); ++i){
+    for(unsigned int i = 0; i < valSet.at(1).size(); ++i){
         if(valSet.at(1).at(i).val < t){
             SetA.negPatch.push_back(trainSet.negPatch.at(valSet.at(1).at(i).index));
             //SetA.negPatch.back().center = trainSet.negPatch.at(valSet.at(1).at(i).index).center;
@@ -1216,7 +1217,7 @@ double CRTree::distMean(const std::vector<CPosPatch>& SetA, const std::vector<CP
     //for(std::vector<CPatch>::const_iterator it = SetA.begin(); it != SetA.end(); ++it) {
 
 
-    for(int i = 0; i < SetA.size(); ++i){
+    for(unsigned int i = 0; i < SetA.size(); ++i){
         //for(unsigned int c = 0; c<nclass; ++c) {
         meanAx[classDatabase.search(SetA.at(i).getClassName())] += SetA.at(i).getCenterPoint().x;
         meanAy[classDatabase.search(SetA.at(i).getClassName())] += SetA.at(i).getCenterPoint().y;
@@ -1238,7 +1239,7 @@ double CRTree::distMean(const std::vector<CPosPatch>& SetA, const std::vector<CP
 
     vector<double> distA(nclass,0);
     //for(std::vector<CPatch>::const_iterator it = SetA.begin(); it != SetA.end(); ++it) {
-    for(int i = 0; i< SetA.size(); ++i){
+    for(unsigned int i = 0; i< SetA.size(); ++i){
         //for(unsigned int c = 0; c<num_cp; ++c) {
         double tmp = SetA.at(i).getCenterPoint().x - meanAx[classDatabase.search(SetA.at(i).getClassName())];
         distA[classDatabase.search(SetA.at(i).getClassName())] += tmp*tmp;
@@ -1264,7 +1265,7 @@ double CRTree::distMean(const std::vector<CPosPatch>& SetA, const std::vector<CP
     std::vector<double> meanBpitch(nclass,0);
     std::vector<double> meanByaw(nclass,0);
     //for(std::vector<CPatch>::const_iterator it = SetB.begin(); it != SetB.end(); ++it) {
-    for(int i = 0; i < SetB.size(); ++i){
+    for(unsigned int i = 0; i < SetB.size(); ++i){
         //for(unsigned int c = 0; c<num_cp; ++c) {
         meanBx[classDatabase.search((SetB.at(i).getClassName()))] += SetB.at(i).getCenterPoint().x;
         meanBy[classDatabase.search((SetB.at(i).getClassName()))] += SetB.at(i).getCenterPoint().y;
@@ -1301,7 +1302,7 @@ double CRTree::distMean(const std::vector<CPosPatch>& SetA, const std::vector<CP
 
     double minDist = DBL_MAX;
 
-    for(unsigned int c = 0; c < nclass; ++c) {
+    for(int c = 0; c < nclass; ++c) {
         distA[c] += distB[c];
         if(distA[c] < minDist) minDist = distA[c];
     }
@@ -1326,16 +1327,16 @@ double CRTree::InfGain(const CTrainSet& SetA, const CTrainSet& SetB) {
     //            maxClass = i;
     //        }
 
-    for(int i = 0; i < SetA.posPatch.size(); ++i)
+    for(unsigned int i = 0; i < SetA.posPatch.size(); ++i)
         set.posPatch.push_back(SetA.posPatch.at(i));
 
-    for(int i = 0; i < SetB.posPatch.size(); ++i)
+    for(unsigned int i = 0; i < SetB.posPatch.size(); ++i)
         set.posPatch.push_back(SetB.posPatch.at(i));
 
-    for(int i = 0; i < SetA.negPatch.size(); ++i)
+    for(unsigned int i = 0; i < SetA.negPatch.size(); ++i)
         set.negPatch.push_back(SetA.negPatch.at(i));
 
-    for(int i = 0; i < SetB.negPatch.size(); ++i)
+    for(unsigned int i = 0; i < SetB.negPatch.size(); ++i)
         set.negPatch.push_back(SetB.negPatch.at(i));
 
 
@@ -1393,11 +1394,11 @@ double CRTree::InfGain(const CTrainSet& SetA, const CTrainSet& SetB) {
 double CRTree::calcEntropy(const CTrainSet &set)
 {
     double entropy = 0;
-    for(int maxClass = 0; maxClass < classDatabase.vNode.size(); ++maxClass){
+    for(unsigned int maxClass = 0; maxClass < classDatabase.vNode.size(); ++maxClass){
         int maxClassNum = 0;
         int otherClass = 0;
 
-        for(int i = 0; i < set.posPatch.size(); ++i)
+        for(unsigned int i = 0; i < set.posPatch.size(); ++i)
             if(classDatabase.search(set.posPatch.at(i).getClassName()) == maxClass)
                 maxClassNum++;
         if(maxClassNum > 0 && maxClassNum != set.size()){

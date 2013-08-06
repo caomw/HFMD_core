@@ -32,7 +32,7 @@ private:
 
 class CPosPatch : public CPatch{
 public:
-    CPosPatch(CPosDataset *pos, cv::Rect r) : pData(pos), CPatch(pos, r){
+ CPosPatch(cv::Rect r,CPosDataset *pos) : CPatch(r, pos),pData(pos){
         relativePosition = pData->getParam()->getCenterPoint() - cv::Point(getRoi().x + getRoi().width / 2 + 1, getRoi().y + getRoi().height / 2 + 1);
         std::cout << relativePosition << std::endl;
     }
@@ -59,7 +59,7 @@ private:
 
 class CNegPatch : public CPatch{
 public:
-    CNegPatch(CNegDataset *neg, cv::Rect r) : nData(neg), CPatch(neg, r){}
+ CNegPatch(cv::Rect r, CNegDataset *neg ) : CPatch(r, neg), nData(neg){}
     CNegPatch(){}
     int getFeatureNum()const{return nData->feature.size();}
     cv::Mat* getDepth() const{return nData->img.at(1);}
@@ -71,7 +71,7 @@ private:
 
 class CTestPatch : public CPatch{
 public:
-    CTestPatch(CTestDataset *tes, cv::Rect r) : tData(tes), CPatch(tes, r){}
+ CTestPatch(cv::Rect r, CTestDataset *tes) : CPatch(r, tes),tData(tes){}
     CTestPatch(){}
     virtual ~CTestPatch(){}
     //cv::Rect getPatchRoi(){return this->getRoi(

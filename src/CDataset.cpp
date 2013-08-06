@@ -179,7 +179,7 @@ int CDataset::releaseImage(){
         return -1;
     }
 
-    for(int i = 0; i < img.size(); ++i){
+    for(unsigned int i = 0; i < img.size(); ++i){
         delete img.at(i);
     }
 
@@ -278,7 +278,7 @@ int CDataset::extractFeatures(const CConfig& conf){
             // calc r g b integral image
             std::vector<cv::Mat> splittedRgb;
             cv::split(*img.at(0), splittedRgb);
-            for(int i = 0; i < splittedRgb.size(); ++i){
+            for(unsigned int i = 0; i < splittedRgb.size(); ++i){
                 integralMat = new cv::Mat(imgRow + 1, imgCol + 1, CV_64F);
                 cv::integral(splittedRgb.at(i), *integralMat, CV_64F);
                 feature.push_back(integralMat);
@@ -313,7 +313,7 @@ int CDataset::releaseFeatures(){
         return -1;
     }
 
-    for(int i = 0; i < feature.size(); ++i){
+    for(unsigned int i = 0; i < feature.size(); ++i){
         if(feature.at(i) != NULL){
             delete feature.at(i);
             feature.at(i) = NULL;
@@ -390,12 +390,22 @@ void CDataset::maxFilter(cv::Mat* src, cv::Mat* des, int fWind) {
 
 }
 
-CNegDataset convertPosToNeg2(CPosDataset &pos)
+CNegDataset* convertPosToNeg2(CPosDataset* pos)
 {
-    CNegDataset tempNegDataset;
-    tempNegDataset.setRgbImagePath(pos.getRgbImagePath());
-    tempNegDataset.setDepthImagePath(pos.getDepthImagePath());
-    tempNegDataset.setModelPath(pos.getModelPath());
+  CNegDataset* tempNegDataset = new CNegDataset();
+  tempNegDataset->setRgbImagePath(pos->getRgbImagePath());
+  tempNegDataset->setDepthImagePath(pos->getDepthImagePath());
+  tempNegDataset->setModelPath(pos->getModelPath());
 
-    return tempNegDataset;
+  tempNegDataset->img.resize(pos->img.size());
+  for(unsigned int i = 0; i < pos->img.size(); ++i)
+    tempNegDataset->img[i] = pos->img[i];
+
+  tempNegDataset->feature.resize(pos->feature.size());
+  for(unsigned int i = 0; i < pos->feature.size(); ++i)
+    tempNegDataset->feature[i] = pos->feature[i];
+
+  //delete pos;
+
+  return tempNegDataset;
 }

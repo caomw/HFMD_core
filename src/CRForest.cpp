@@ -42,8 +42,8 @@ void CRForest::learning(){
 
 void CRForest::growATree(const int treeNum){
   // positive, negative dataset
-  std::vector<CPosDataset> posSet(0);
-  std::vector<CNegDataset> negSet(0);
+  std::vector<CPosDataset*> posSet(0);
+  std::vector<CNegDataset*> negSet(0);
 
   // positive, negative patch
   std::vector<CPosPatch> posPatch(0);
@@ -66,7 +66,7 @@ void CRForest::growATree(const int treeNum){
 
   CClassDatabase tempClassDatabase;
   // extract pos features and register classDatabase
-  for(int i = 0; i < posSet.size(); ++i){
+  for(unsigned int i = 0; i < posSet.size(); ++i){
     //std::cout << i << std::endl;
 
     //std::cout << posSet.at(i).rgb << std::endl;
@@ -83,25 +83,9 @@ void CRForest::growATree(const int treeNum){
     //    tempClassDatabase.add(
 
     
-    tempClassDatabase.add(posSet.at(i).getParam()->getClassName(),cv::Size(),0);
+    tempClassDatabase.add(posSet[i]->getParam()->getClassName(),cv::Size(),0);
   }
 
-  std::vector<CPosDataset> tempPosSet(0);
-  int currentClass = treeNum % tempClassDatabase.vNode.size();
-
-  //std::cout << "okashiina" << std::endl;
-  if(!conf.modelLearningMode)
-    for(int i = 0; i < posSet.size(); ++i){
-      if(tempClassDatabase.search(posSet.at(i).getClassName()) == currentClass){
-	tempPosSet.push_back(posSet.at(i));
-	//std::cout << "teketeke" << std::endl;
-      }else{
-	negSet.push_back(convertPosToNeg2(posSet.at(i)));
-	//std::cout << "negneg" << std::endl;
-      }
-    }
-
-  //posSet = tempPosSet;
 
   loadTrainNegFile(conf, negSet);
 
@@ -112,51 +96,100 @@ void CRForest::growATree(const int treeNum){
 
   std::cout << "generating appearance from 3D model!" << std::endl;
   // extract pos features and register classDatabase
-  for(int i = 0; i < posSet.size(); ++i){
+  for(unsigned int i = 0; i < posSet.size(); ++i){
     //std::cout << i << std::endl;
 
     //std::cout << posSet.at(i).rgb << std::endl;
     //#pragma omp critical
     if(conf.modelLearningMode)
-      posSet.at(i).loadImage(conf, posSet.at(i).getModelPath(), posSet.at(i).getParam());
+      posSet.at(i)->loadImage(conf, posSet.at(i)->getModelPath(), posSet.at(i)->getParam());
     else
-      posSet.at(i).loadImage(conf);
+      posSet.at(i)->loadImage(conf);
     //        if(imgload == -1 && conf.learningMode != 2){
     //            std::cout << "can't load image files" << std::endl;
     //            exit(-1);
     //        }
-
-    posSet.at(i).extractFeatures(conf);
-
+    posSet.at(i)->extractFeatures(conf);
     //std::cout << posSet.at(i).img.at(1)->type() << std::endl;
     //std::cout << "detayo" << std::endl;
-
     //std::cout << posSet.size() << std::endl;
 
-    classDatabase.add(posSet.at(i).getParam()->getClassName(),posSet.at(i).img.at(0)->size(),0);
+    classDatabase.add(posSet.at(i)->getParam()->getClassName(),posSet.at(i)->img.at(0)->size(),0);
     pBar(i,posSet.size(),50);
   }
   std::cout << std::endl;
   classDatabase.show();
 
+
   // extract neg features
-  for(int i = 0; i < negSet.size(); ++i){
+  for(unsigned int i = 0; i < negSet.size(); ++i){
     //        if(negSet.at(i).getModel() != NULL)
     //            negSet.at(i).loadImage(conf, negSet.at(i).getModelPath(), posSet.at(i))
-    negSet.at(i).loadImage(conf);
-    negSet.at(i).extractFeatures(conf);
+    negSet.at(i)->loadImage(conf);
+    negSet.at(i)->extractFeatures(conf);
   }
 
+  std::vector<CPosDataset*> tempPosSet(0);
+  int currentClass = treeNum % tempClassDatabase.vNode.size();
+
+  //std::cout << "okashiina" << std::endl;
+  // if(!conf.modelLearningMode)
+  for(unsigned int i = 0; i < posSet.size(); ++i){
+    if(tempClassDatabase.search(posSet.at(i)->getClassName()) == currentClass){
+      tempPosSet.push_back(posSet.at(i));
+      //std::cout << "teketeke" << std::endl;
+    }else{
+      //      negSet.push_back(convertPosToNeg2(posSet.at(i)));
+      negSet.push_back((CNegDataset*)posSet[i]);
+      //std::cout << "negneg" << std::endl;
+    }
+  }
+
+  posSet = tempPosSet;
+
+  // for(int i = 0; i < negSet.size(); ++i){
+  //   cv::namedWindow("test");
+  //   cv::imshow("test", *negSet[i]->img.at(0));
+  //   cv::waitKey(0);
+  // }
+
+  cv::destroyWindow("test");
+
+  //if(!conf.modelLearningMode)
+  //tempClassDatabase.show();
+
+  //tempPosSet.clear(); 
+
+  //for(unsigned int i = 0; i < posSet.size(); ++i){
+  //  std::cout << posSet[i].getClassName() << std::endl;
+  //  CPosDataset tpos = posSet[i];
+
+  //}
+
+  // for(unsigned int i = 0; i < posSet.size(); ++i){
+  //   if(tempClassDatabase.search(posSet.at(i).getClassName()) == currentClass){
+  //     //std::cout << posSet.at(i).getClassName() << std::endl;
+  //     tempPosSet.push_back(posSet.at(i));
+  //     //std::cout << "teketeke" << std::endl;
+  //   }else{
+  //     //std::cout << "haitta" << std::endl;
+  //     //	negSet.push_back(convertPosToNeg2(posSet.at(i)));
+  //     //std::cout << "negneg" << std::endl;
+  //   }
+  // }
+  // posSet = tempPosSet;
+  // std::cout << "bunrui" << std::endl;
+  
   CRTree *tree = new CRTree(conf.min_sample, conf.max_depth, classDatabase.vNode.size(),this->classDatabase);
   std::cout << "tree created" << std::endl;
-
+  
   extractPosPatches(posSet,posPatch,conf,treeNum,this->classDatabase);
   extractNegPatches(negSet,negPatch,conf);
-
+  
   std::cout << "extracted pathes" << std::endl;
   std::vector<int> patchClassNum(classDatabase.vNode.size(), 0);
 
-  for(unsighed int j = 0; j < posPatch.size(); ++j)
+  for(unsigned int j = 0; j < posPatch.size(); ++j)
     patchClassNum.at(classDatabase.search(posPatch.at(j).getClassName()))++;
 
   // grow tree
@@ -192,7 +225,7 @@ void CRForest::growATree(const int treeNum){
     std::cout << "can't write result" << std::endl;
   }
 
-  lerningResult << time << std::endl;
+  //lerningResult << time << std::endl;
 
   lerningResult.close();
 
@@ -224,6 +257,11 @@ void CRForest::growATree(const int treeNum){
   //    for(int i = 0; i < posSet.size(); ++i){
   //        posSet.at(i).releaseFeatures();
   //    }
+
+  for(int i = 0; i < posSet.size(); ++i)
+    delete posSet[i];
+  for(int i = 0; i < negSet.size(); ++i)
+    delete negSet[i];
 
   posSet.clear();
   negSet.clear();
@@ -309,7 +347,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
   //features.push_back(image.at(1));
   // extract patches from features
 
-  extractTestPatches(testSet,testPatch,this->conf);
+  extractTestPatches(&testSet,testPatch,this->conf);
 
   //std::cout << "extracted feature " << t.elapsed() << " sec" << std::endl;
 
@@ -330,11 +368,11 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
       {
 #pragma omp for
 
-	for(int l = 0; l < result.at(m)->pfg.size(); ++l){
+	for(unsigned int l = 0; l < result.at(m)->pfg.size(); ++l){
 	  if(result.at(m)->pfg.at(l) > 0.9){
 	    int cl = classDatabase.search(result.at(m)->param.at(l).at(0).getClassName());
 
-	    for(int n = 0; n < result.at(m)->param.at(cl).size(); ++n){
+	    for(unsigned int n = 0; n < result.at(m)->param.at(cl).size(); ++n){
 	      cv::Point patchSize(conf.p_height/2,conf.p_width/2);
 
 	      cv::Point rPoint = result.at(m)->param.at(cl).at(n).getCenterPoint();
@@ -446,7 +484,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
   //cv::destroyWindow("test");
   //cv::destroyWindow("test2")
 
-// create detection result
+  // create detection result
   CDetectionResult detectResult;
   detectResult.voteImage = voteImage;
 
@@ -454,7 +492,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
   std::cout << "show ground truth" << std::endl;
   //    std::cout << dataSet.className.size() << std::endl;
   //    std::cout << dataSet.centerPoint.size() << std::endl;
-  for(int i = 0; i < testSet.param.size(); ++i){
+  for(unsigned int i = 0; i < testSet.param.size(); ++i){
     testSet.param.at(i).showParam();
   }
 
@@ -501,7 +539,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 
     // draw grand truth to result image
     if(!conf.demoMode){
-      for(int i = 0; i < testSet.param.size(); ++i){
+      for(unsigned int i = 0; i < testSet.param.size(); ++i){
 	int tempClassNum = classDatabase.search(testSet.param.at(i).getClassName());
 	if(tempClassNum != -1){
 	  cv::Size tempSize = classDatabase.vNode.at(tempClassNum).classSize;
@@ -531,10 +569,11 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
     detectedClass.name = classDatabase.vNode.at(c).name;
     detectedClass.angle[0] = max_pose[0].x;
 
-    // calc euclidean dist to nearest object
-    double minError = DBL_MAX;
+    double minError = 10000000;
+
     std::string nearestObject;
-    for(int d = 0; d < testSet.param.size(); ++d){
+
+    for(unsigned int d = 0; d < testSet.param.size(); ++d){
       double tempError = euclideanDist(maxLoc,testSet.param.at(d).getCenterPoint());//= std::sqrt(std::pow((double)(maxLoc.x - testSet.param.at(0).getCenterPoint().x), 2) + std::pow((double)(maxLoc.y - testSet.param.at(0).getCenterPoint().y), 2));
       //std::cout << tempError << std::endl;
       if(tempError < minError){
@@ -567,7 +606,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 void CRForest::regression(std::vector<const LeafNode*>& result, CTestPatch &patch) const{
   result.resize( vTrees.size() );
   //std::cout << "enter regression" << std::endl;
-  for(int i=0; i < vTrees.size(); ++i) {
+  for(unsigned int i=0; i < vTrees.size(); ++i) {
     //std::cout << "regressioning " << i << std::endl;
     result[i] = vTrees[i]->regression(patch);
   }

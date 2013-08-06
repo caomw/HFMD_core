@@ -1,6 +1,6 @@
 #include "globjloader.h"
 
-CGlObjLoader::CGlObjLoader(char* fname)
+CGlObjLoader::CGlObjLoader(const char* fname)
 {
   _left = 0.0;		/* ortho view volume params */
   _right = 0.0;
@@ -374,7 +374,7 @@ cv::vector<cv::Mat*> CGlObjLoader::getAppearance(double r, double p, double y){
     return appearance;
 }
 
-cv::vector<cv::Mat*> CGlObjLoader::getAppearance(double* angle){
+cv::vector<cv::Mat*> CGlObjLoader::getAppearance(const double* angle){
     roll = angle[0];
     pitch = angle[1];
     yaw = angle[2];

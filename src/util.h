@@ -32,7 +32,7 @@ void normarizationCenterPointT(CTestPatch &patch, const CConfig &config);
 class databaseNode{
 public:
     databaseNode(std::string className,cv::Size size, uchar depth)
-        : name(className), instances(1), classSize(size),classDepth(depth){}
+      : name(className), classSize(size),classDepth(depth), instances(1){}
 
     std::string name;
     cv::Size classSize;
@@ -86,19 +86,19 @@ private:
     static boost::lagged_fibonacci1279 gen;
 };
 
-void loadTrainObjFile(CConfig conf, std::vector<CPosDataset> &posSet);
-void loadTrainPosFile(CConfig conf, std::vector<CPosDataset> &posSet);//, boost::mt19937 &gen);
-void loadTrainNegFile(CConfig conf, std::vector<CNegDataset> &negSet);
+void loadTrainObjFile(CConfig conf, std::vector<CPosDataset*> &posSet);
+void loadTrainPosFile(CConfig conf, std::vector<CPosDataset*> &posSet);//, boost::mt19937 &gen);
+void loadTrainNegFile(CConfig conf, std::vector<CNegDataset*> &negSet);
 //void loadTestFile(CConfig conf, std::vector<CTestDataset> &testSet);
 
-void extractPosPatches(std::vector<CPosDataset> &posSet,
+void extractPosPatches(std::vector<CPosDataset*> &posSet,
                        std::vector<CPosPatch> &posPatch,
                        CConfig conf,
                        const int treeNum,
                        const CClassDatabase &classDatabase);
-void extractNegPatches(std::vector<CNegDataset> &negSet,std::vector<CNegPatch> &negPatch,
+void extractNegPatches(std::vector<CNegDataset*> &negSet,std::vector<CNegPatch> &negPatch,
                        CConfig conf);
-void extractTestPatches(CTestDataset &testSet,std::vector<CTestPatch> &testPatch, CConfig conf);
+void extractTestPatches(CTestDataset* testSet,std::vector<CTestPatch> &testPatch, CConfig conf);
 
 void pBar(int p,int maxNum, int width);
 

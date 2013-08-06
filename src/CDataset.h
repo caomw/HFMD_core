@@ -28,7 +28,7 @@ public:
             angle[i] = an[i];
         return 0;
     }
-    double* getAngle(){return angle;}
+    const double* getAngle()const{return angle;}
 
     int showParam();
 
@@ -108,7 +108,6 @@ public:
     void setCenterPoint(cv::Point cp){param.setCenterPoint(cp);}
 
     std::string getClassName(){return param.getClassName();}
-
     CParamset* getParam(){return &param;}
 
 private:
@@ -130,6 +129,6 @@ public:
     std::vector<CParamset> param;
 };
 
-CNegDataset convertPosToNeg2(CPosDataset& pos);
+CNegDataset* convertPosToNeg2(CPosDataset* pos);
 
 #endif // CDATASET_H

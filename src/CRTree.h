@@ -62,7 +62,7 @@ public:
         // number of nodes x 7 matrix as vector
         treetable = new int[num_nodes * 11];
         // init treetable
-        for(int i = 0; i< num_nodes * 11; ++i)
+        for(unsigned int i = 0; i< num_nodes * 11; ++i)
             treetable[i] = 0;
 
         leaf= new LeafNode[(int)pow(2.0, int(max_depth))];
@@ -91,7 +91,7 @@ public:
 
     // Training
     //void growTree(std::vector<std::vector<CPatch> > &TrData, int node, int depth, float pnratio, CConfig conf, boost::mt19937 gen,const std::vector<int> &defaultClass_);
-    void growTree(std::vector<CPosPatch> &posPatch, std::vector<CNegPatch> &negPatch, int node, int depth, float pnratio, CConfig conf, const std::vector<int> &defaultClass_);
+    void growTree(std::vector<CPosPatch> &posPatch, std::vector<CNegPatch> &negPatch, int node, unsigned int depth, float pnratio, CConfig conf, const std::vector<int> &defaultClass_);
     //boost::mt19937 gen;
     bool optimizeTest(CTrainSet &SetA,
                       CTrainSet &SetB,
@@ -111,7 +111,7 @@ public:
     double InfGain(const CTrainSet& SetA, const CTrainSet& SetB);
     double calcEntropy(const CTrainSet &set);//, int negSize,int maxClass);
     double measureSet(const CTrainSet& SetA, const CTrainSet& SetB, unsigned int depth,int mode) {
-        double lamda = 1;
+      //double lamda = 1;
         if(mode == 1)
             return InfGain(SetA, SetB);
         else
@@ -170,7 +170,7 @@ private:
 };
 
 inline void CRTree::generateTest(int* test, unsigned int max_w, unsigned int max_h, unsigned int max_c, int depth) {
-    double lamda = (double) config.max_depth;
+  //double lamda = (double) config.max_depth;
     boost::mt19937    gen2(static_cast<unsigned long>(time(NULL)) );
 
     boost::uniform_int<> dst( 0, INT_MAX );

@@ -28,11 +28,11 @@
 class CGlObjLoader
 {
 public:
-  CGlObjLoader(char* fname);
-    virtual ~CGlObjLoader();
+  CGlObjLoader(const char* fname);
+  virtual ~CGlObjLoader();
 
     cv::vector<cv::Mat*> getAppearance(double r, double p, double y);
-    cv::vector<cv::Mat*> getAppearance(double* angle);
+    cv::vector<cv::Mat*> getAppearance(const double* angle);
 
 private:
     cv::Mat frontBuffer;
