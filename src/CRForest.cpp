@@ -156,7 +156,7 @@ void CRForest::growATree(const int treeNum){
   std::cout << "extracted pathes" << std::endl;
   std::vector<int> patchClassNum(classDatabase.vNode.size(), 0);
 
-  for(int j = 0; j < posPatch.size(); ++j)
+  for(unsighed int j = 0; j < posPatch.size(); ++j)
     patchClassNum.at(classDatabase.search(posPatch.at(j).getClassName()))++;
 
   // grow tree
@@ -319,13 +319,13 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 
   std::cout << "class num = " << classNum << std::endl;
 
-  for(int j = 0; j < testPatch.size(); ++j){
+  for(unsigned int j = 0; j < testPatch.size(); ++j){
     // regression current patch
     result.clear();
     this->regression(result, testPatch.at(j));
 
     // for each tree leaf
-    for(int m = 0; m < result.size(); ++m){
+    for(unsigned int m = 0; m < result.size(); ++m){
 #pragma omp parallel
       {
 #pragma omp for
@@ -346,8 +346,8 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 		double centerDepth = realDepth.at<ushort>(tempRect.height / 2 + 1, tempRect.width / 2 + 1) + conf.mindist;
 
 		rPoint *= centerDepth;
-		rPoint.x /= 1000;
-		rPoint.y /= 1000;
+		rPoint.x /= 3000;
+		rPoint.y /= 3000;
 
 
 	      }

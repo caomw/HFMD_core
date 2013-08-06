@@ -7,7 +7,7 @@
 class CPatch
 {
 public:
-    CPatch(CDataset *d, cv::Rect r) : data(d), roi(r){
+ CPatch(cv::Rect r,CDataset *d) : roi(r), data(d){
         //cv::Mat* depthImage = d->img.at(1);
         //relativePosition.x = data->getDepthImagePath() - roi.x + roi.width / 2 + 1
     }
@@ -28,7 +28,6 @@ private:
     cv::Rect roi;
     double scale;
     CDataset *data;
-
 };
 
 class CPosPatch : public CPatch{
