@@ -87,13 +87,15 @@ public:
     //  void maxFilter(cv::Mat* src, cv::Mat* des, int fWind) const;
 
     //void voteResult(int classNumber, )
-
+    
     CClassDatabase classDatabase;
+    double matrix[16];
+    double matrixI[16];
 
 private:
     CConfig		conf;
     std::vector<CRTree*>	vTrees;
-
+    CGlObjLoader *obj;
 };
 
 //inline void CRForest::extractFeatureChannels(const cv::Mat* img, cv::vector<cv::Mat*>& vImg) const{

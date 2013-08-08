@@ -34,7 +34,7 @@ class CPosPatch : public CPatch{
 public:
  CPosPatch(cv::Rect r,CPosDataset *pos) : CPatch(r, pos),pData(pos){
         relativePosition = pData->getParam()->getCenterPoint() - cv::Point(getRoi().x + getRoi().width / 2 + 1, getRoi().y + getRoi().height / 2 + 1);
-        std::cout << relativePosition << std::endl;
+        //std::cout << relativePosition << std::endl;
     }
     CPosPatch(){
 

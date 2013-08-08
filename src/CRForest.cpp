@@ -31,13 +31,20 @@ double euclideanDist(cv::Point p, cv::Point q)
 }
 
 void CRForest::learning(){
-  //#pragma omp parallel
-  //    {
-  //#pragma omp for
-  for(int i = 0;i < conf.ntrees; ++i){
-    growATree(i);
-  } // end tree loop
-    //}
+  obj = new CGlObjLoader();
+
+  //glGetDoublev(GL_MODELVIEW_MATRIX, matrix);
+  //obj->invertMatrix(matrix, matrixI);
+  
+ #pragma omp parallel
+ {
+#pragma omp for
+    for(int i = 0;i < conf.ntrees; ++i){
+      growATree(i);
+    } // end tree loop
+   }
+
+    //delete obj;
 }
 
 void CRForest::growATree(const int treeNum){
@@ -59,10 +66,10 @@ void CRForest::growATree(const int treeNum){
 
 
   //loadTrainPosFile(conf, posSet);//, gen);
-  if(conf.modelLearningMode)
-    loadTrainObjFile(conf,posSet);
-  else
-    loadTrainPosFile(conf, posSet);
+  //  if(conf.modelLearningMode)
+  //  loadTrainObjFile(conf,posSet);
+  //else
+  loadTrainPosFile(conf, posSet);
 
   CClassDatabase tempClassDatabase;
   // extract pos features and register classDatabase
@@ -101,11 +108,13 @@ void CRForest::growATree(const int treeNum){
 
     //std::cout << posSet.at(i).rgb << std::endl;
     //#pragma omp critical
-    if(conf.modelLearningMode)
-      posSet.at(i)->loadImage(conf, posSet.at(i)->getModelPath(), posSet.at(i)->getParam());
-    else
+    //   if(conf.modelLearningMode){
+      //#pragma omp critical
+    //posSet.at(i)->loadImage(obj,conf, posSet.at(i)->getModelPath(), posSet.at(i)->getParam());
+    //}else{
       posSet.at(i)->loadImage(conf);
-    //        if(imgload == -1 && conf.learningMode != 2){
+      //}
+      //        if(imgload == -1 && conf.learningMode != 2){
     //            std::cout << "can't load image files" << std::endl;
     //            exit(-1);
     //        }
@@ -135,6 +144,11 @@ void CRForest::growATree(const int treeNum){
   //std::cout << "okashiina" << std::endl;
   // if(!conf.modelLearningMode)
   for(unsigned int i = 0; i < posSet.size(); ++i){
+    //    cv::namedWindow("test");
+    //cv::imshow("test", *posSet[i]->img[0]);
+    //    cv::waitKey(0);
+    //    cv::destroyWindow("test");
+    
     if(tempClassDatabase.search(posSet.at(i)->getClassName()) == currentClass){
       tempPosSet.push_back(posSet.at(i));
       //std::cout << "teketeke" << std::endl;
@@ -153,7 +167,7 @@ void CRForest::growATree(const int treeNum){
   //   cv::waitKey(0);
   // }
 
-  cv::destroyWindow("test");
+  //cv::destroyWindow("test");
 
   //if(!conf.modelLearningMode)
   //tempClassDatabase.show();
@@ -179,6 +193,8 @@ void CRForest::growATree(const int treeNum){
   // }
   // posSet = tempPosSet;
   // std::cout << "bunrui" << std::endl;
+
+
   
   CRTree *tree = new CRTree(conf.min_sample, conf.max_depth, classDatabase.vNode.size(),this->classDatabase);
   std::cout << "tree created" << std::endl;
@@ -401,9 +417,8 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 		double centerDepth = realDepth.at<ushort>(tempRect.height / 2 + 1, tempRect.width / 2 + 1) + conf.mindist;
 
 		rPoint *= centerDepth;
-		rPoint.x /= 3000;
-		rPoint.y /= 3000;
-
+		rPoint.x /= 1000;
+		rPoint.y /= 1000;
 
 	      }
 
@@ -471,7 +486,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 #pragma omp for
     // find balance by mean shift
     for(int i = 0; i < classNum; ++i){
-      //cv::GaussianBlur(voteImage.at(i),voteImage.at(i), cv::Size(21,21),0);
+      cv::GaussianBlur(voteImage.at(i),voteImage.at(i), cv::Size(21,21),0);
     }
   }
 
@@ -556,9 +571,9 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
     for(int x = 0; x < conf.paramRadius; ++x){
       for(int y = 0; y < conf.paramRadius; ++y){
 	if( maxLoc.x + x < imgCol &&  maxLoc.y + y < imgRow)
-	  hist += voteParam2.at(c)[(int)((double)(maxLoc.y + y) / (double)conf.stride + 0.5)][(int)((double)(maxLoc.x + x) / (double)conf.stride + 0.5)];
+	  hist += voteParam2.at(c)[(int)((double)(maxLoc.y + y) / (double)conf.stride)][(int)((double)(maxLoc.x + x) / (double)conf.stride)];
 	if(maxLoc.x - x > 0 && maxLoc.y - y > 0)
-	  hist += voteParam2.at(c)[(int)((double)(maxLoc.y - y) / (double)conf.stride + 0.5)][(int)((double)(maxLoc.x - x) / (double)conf.stride + 0.5)];
+	  hist += voteParam2.at(c)[(int)((double)(maxLoc.y - y) / (double)conf.stride)][(int)((double)(maxLoc.x - x) / (double)conf.stride)];
       }
     }
 

@@ -55,7 +55,7 @@ public:
     virtual ~CDataset();
 
     int loadImage(const CConfig &);
-    int loadImage(const CConfig &conf, const std::string modelName, const CParamset *param);
+    int loadImage(CGlObjLoader *obj,const CConfig &conf, const std::string modelName, const CParamset *param);
     int releaseImage();
 
     int extractFeatures(const CConfig &);

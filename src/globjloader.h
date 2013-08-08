@@ -29,11 +29,17 @@ class CGlObjLoader
 {
 public:
   CGlObjLoader(const char* fname);
+  CGlObjLoader();
+
   virtual ~CGlObjLoader();
+
+  int setModel(const char* fname);
 
     cv::vector<cv::Mat*> getAppearance(double r, double p, double y);
     cv::vector<cv::Mat*> getAppearance(const double* angle);
-
+    
+    void invertMatrix(const GLdouble * m, GLdouble * out);
+    void setMatrix(double * matrixI);
 private:
     cv::Mat frontBuffer;
     cv::Mat depthBuffer;
@@ -67,7 +73,7 @@ private:
     void pos(double *px, double *py, double *pz, const int x, const int y,
              const int *viewport);
     void getMatrix();
-    void invertMatrix(const GLdouble * m, GLdouble * out);
+
 
     /* Global Variables for this app */
     GLMmodel *pmodel;	/* the loaded model */

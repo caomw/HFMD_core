@@ -164,7 +164,8 @@ void loadTrainPosFile(CConfig conf, std::vector<CPosDataset*> &posSet)
 
       //read angle grand truth
       double tempAngle[3];
-      trainDataList >> tempAngle[2];
+      for(int i = 0; i < 3; ++i)
+	trainDataList >> tempAngle[i];
 
       posTemp->setAngle(tempAngle);
 
@@ -257,7 +258,7 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
                        const int treeNum,
                        const CClassDatabase &classDatabase){
   cv::Rect tempRect;
-
+  //  std::cout << "kokokara" << std::endl;
   std::vector<CPosPatch> tPosPatch(0);//, posPatch(0);
   std::vector<std::vector<CPosPatch> > patchPerClass(classDatabase.vNode.size());
   //int pixNum;
@@ -278,21 +279,6 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
       for(int k = 0; k < posSet.at(l)->img.at(0)->rows - conf.p_height; k += conf.stride){
 	tempRect.x = j;
 	tempRect.y = k;
-	//pixNum = 0;
-
-
-	// detect negative patch
-	//                if(conf.learningMode != 2 && posSet.at(l).img.at(1)->at<ushort>(k + (conf.p_height / 2) + 1, j + (conf.p_width / 2) + 1 ) != 0){
-
-	//                    roi = (*posSet.at(l).img.at(1))(cv::Rect(j, k, conf.p_width, conf.p_height));
-	//                    pixNum = calcSumOfDepth(roi,conf);
-	//                }
-	//                    for(int m = j; m < j + conf.p_width; ++m){
-	//                        for(int n = k; n < k + conf.p_height; ++n){
-	//                            if(posSet.at(l).img.at(1)->at<ushort>(k + (conf.p_height / 2) + 1, j + (conf.p_width / 2) + 1 ) != 0)
-	//                                pixNum += (int)(posSet.at(l).img.at(1)->at<ushort>(n, m));
-	//                        }
-	//                    }
 
 	// set patch class
 	classNum = classDatabase.search(posSet.at(l)->getParam()->getClassName());//dataSet.at(l).className.at(0));
@@ -302,8 +288,6 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
 	}
 
 	//tPatch.setPatch(temp, image.at(l), dataSet.at(l), classNum);
-
-
 
 	CPosPatch posTemp(tempRect, posSet.at(l));
 
@@ -318,15 +302,20 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
 
 	}
 
+	//std::cout << centerDepthFlag << std::endl;
+
 	//if (conf.learningMode == 2){// || pixNum > 0){
 	if(centerDepthFlag != 1){
-
 	  if(conf.learningMode != 2){
-	    normarizationCenterPointP(posTemp, conf);
 	    normarizationByDepth(posTemp , conf);
+	    normarizationCenterPointP(posTemp, conf);
 	  }
 
+	  
+	  //	  std::cout << "kokomade" << std::endl;
+	  //std::cout << posTemp.getRoi().width << std::endl;
 	  if(posTemp.getRoi().width > 5 && posTemp.getRoi().height > 5){
+	    
 	    tPosPatch.push_back(posTemp);
 	    patchPerClass.at(classNum).push_back(posTemp);
 	  }
@@ -400,9 +389,9 @@ void extractNegPatches(std::vector<CNegDataset*> &negSet,
   tempRect.height = conf.p_height;
 
   // extract negative patch
-  std::cout << negSet.size() << std::endl;
-  std::cout << negSet.at(0)->img.at(0)->cols << std::endl;
-  std::cout << negSet.at(0)->img.at(0)->rows << std::endl;
+  //std::cout << negSet.size() << std::endl;
+  //std::cout << negSet.at(0)->img.at(0)->cols << std::endl;
+  //std::cout << negSet.at(0)->img.at(0)->rows << std::endl;
   for(unsigned int i = 0; i < negSet.size(); ++i){
     for(int j = 0; j < negSet.at(i)->img.at(0)->cols - conf.p_width; j += conf.stride){
       for(int k = 0; k < negSet.at(i)->img.at(0)->rows - conf.p_height; k += conf.stride){
@@ -479,10 +468,14 @@ void extractTestPatches(CTestDataset* testSet,std::vector<CTestPatch> &testPatch
   tempRect.width = conf.p_width;
   tempRect.height = conf.p_height;
 
+  int imgCol = testSet->img[0]->cols;
+  int imgRow = testSet->img[0]->rows;
+  
   testPatch.clear();
+  testPatch.reserve((int)(((double)imgCol / (double)conf.stride) * ((double)imgRow / (double)conf.stride)));
   //std::cout << "extraction patches!" << std::endl;
-  for(int j = 0; j < testSet->img.at(0)->cols - conf.p_width; j += conf.stride){
-    for(int k = 0; k < testSet->img.at(0)->rows - conf.p_height; k += conf.stride){
+  for(int j = 0; j < imgCol - conf.p_width; j += conf.stride){
+    for(int k = 0; k < imgRow - conf.p_height; k += conf.stride){
       tempRect.x = j;
       tempRect.y = k;
 
@@ -575,7 +568,7 @@ void CClassDatabase::write(const char* str){
   }
   out.close();
 
-  std::cout << "out ha shimemashita" << std::endl;
+  //  std::cout << "out ha shimemashita" << std::endl;
 }
 
 void CClassDatabase::read(const char* str){
@@ -706,7 +699,7 @@ void normarizationCenterPointP(CPosPatch &patch, const CConfig &config){//, cons
   double centerDepth = depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist;
   cv::Point currentP = patch.getRelativePosition();
 
-  std::cout << "current p " << currentP << std::endl;
+  //  std::cout << "current p " << currentP << std::endl;
 
   //    currentP.x = currentP.x * 10;
   currentP.y *= 1000;
@@ -714,7 +707,7 @@ void normarizationCenterPointP(CPosPatch &patch, const CConfig &config){//, cons
   currentP.x /= centerDepth;
   currentP.y /= centerDepth;
 
-  std::cout << "heknak go " << currentP << std::endl;
+  //  std::cout << "heknak go " << currentP << std::endl;
   patch.setRelativePosition(currentP);
 }
 
