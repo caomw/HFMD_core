@@ -31,20 +31,20 @@ double euclideanDist(cv::Point p, cv::Point q)
 }
 
 void CRForest::learning(){
-  obj = new CGlObjLoader();
+  //obj = new CGlObjLoader();
 
   //glGetDoublev(GL_MODELVIEW_MATRIX, matrix);
   //obj->invertMatrix(matrix, matrixI);
   
- #pragma omp parallel
- {
+#pragma omp parallel
+  {
 #pragma omp for
     for(int i = 0;i < conf.ntrees; ++i){
       growATree(i);
     } // end tree loop
-   }
+  }
 
-    //delete obj;
+  //delete obj;
 }
 
 void CRForest::growATree(const int treeNum){
@@ -109,12 +109,12 @@ void CRForest::growATree(const int treeNum){
     //std::cout << posSet.at(i).rgb << std::endl;
     //#pragma omp critical
     //   if(conf.modelLearningMode){
-      //#pragma omp critical
+    //#pragma omp critical
     //posSet.at(i)->loadImage(obj,conf, posSet.at(i)->getModelPath(), posSet.at(i)->getParam());
     //}else{
-      posSet.at(i)->loadImage(conf);
-      //}
-      //        if(imgload == -1 && conf.learningMode != 2){
+    posSet.at(i)->loadImage(conf);
+    //}
+    //        if(imgload == -1 && conf.learningMode != 2){
     //            std::cout << "can't load image files" << std::endl;
     //            exit(-1);
     //        }
@@ -452,13 +452,13 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 		switch(cl){
 		case 0:
 		  hanabi= cv::Scalar(0,0,255);
-		break;
+		  break;
 		case 1:
 		  hanabi= cv::Scalar(255,0,0);
-		break;
+		  break;
 		case 2:
 		  hanabi= cv::Scalar(0,255,0);
-		break;
+		  break;
 		}
 		// this code is for debug and setting
 		cv::circle(votedVectors,pos,5,hanabi);//cv::Scalar(254,254,254));
@@ -531,15 +531,17 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 
   voteImage.at(0).convertTo(showVoteImage, CV_8UC1, 254 * 100);
 
-  cv::namedWindow("test");
-  cv::imshow("test", showVoteImage);
-  cv::namedWindow("test2");
-  cv::imshow("test2", outputImage[0]);
-  cv::namedWindow("test3");
-  cv::imshow("test3", votedVectors);
-  cv::imwrite("hanabi.png",votedVectors);
+  if(!conf.demoMode){
+    cv::namedWindow("test");
+    cv::imshow("test", showVoteImage);
+    cv::namedWindow("test2");
+    cv::imshow("test2", outputImage[0]);
+    cv::namedWindow("test3");
+    cv::imshow("test3", votedVectors);
+    cv::imwrite("hanabi.png",votedVectors);
   
-  cv::waitKey(0);
+    cv::waitKey(0);
+  }
   //cv::destroyWindow("test");
   //cv::destroyWindow("test2")
 

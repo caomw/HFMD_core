@@ -140,47 +140,47 @@ int CDataset::loadImage(const CConfig &conf){
 }
 
 
-int CDataset::loadImage(CGlObjLoader *obj,const CConfig &conf, const std::string modelName, const CParamset* param){
-    cv::Mat *rgbImg, *depthImg;
-    //std::cout << rgb << " " << depth << std::endl;
+// int CDataset::loadImage(CGlObjLoader *obj,const CConfig &conf, const std::string modelName, const CParamset* param){
+//     cv::Mat *rgbImg, *depthImg;
+//     //std::cout << rgb << " " << depth << std::endl;
 
-    this->img.resize(2);
+//     this->img.resize(2);
 
-    //std::cout << "syuturyoku" << std::endl;
-    //std::cout << this->getModelPath() << std::endl;
+//     //std::cout << "syuturyoku" << std::endl;
+//     //std::cout << this->getModelPath() << std::endl;
 
-    //    CGlObjLoader obj(this->getModelPath().c_str()); 
-    //= new CGlObjLoader(this->getModelPath().c_str());
-    cv::vector<cv::Mat *> tempImage;
-    //std::cout << "kokomade kitayo" << std::endl;
+//     //    CGlObjLoader obj(this->getModelPath().c_str()); 
+//     //= new CGlObjLoader(this->getModelPath().c_str());
+//     cv::vector<cv::Mat *> tempImage;
+//     //std::cout << "kokomade kitayo" << std::endl;
     
-    //#pragma omp critical
-    //{
-    //std::cout << "haittayo " << std::endl;
-    CGlObjLoader obj2(this->getModelPath().c_str());
-      //    obj->setModel(this->getModelPath().c_str());
-    tempImage = obj2.getAppearance(param->getAngle());
-    //}
+//     //#pragma omp critical
+//     //{
+//     //std::cout << "haittayo " << std::endl;
+//     CGlObjLoader obj2(this->getModelPath().c_str());
+//       //    obj->setModel(this->getModelPath().c_str());
+//     tempImage = obj2.getAppearance(param->getAngle());
+//     //}
 
-    rgbImg = tempImage.at(0);
-    depthImg = tempImage.at(1);
+//     rgbImg = tempImage.at(0);
+//     depthImg = tempImage.at(1);
 
-    //    rgbImg = new cv::Mat(480,640,CV_8U);// = cv::Mat::zeros(480,640,CV_8U);
-    //    depthImg = new cv::Mat(480,640,CV_8U);// = cv::Mat::zeros(480,640,CV_8U);
+//     //    rgbImg = new cv::Mat(480,640,CV_8U);// = cv::Mat::zeros(480,640,CV_8U);
+//     //    depthImg = new cv::Mat(480,640,CV_8U);// = cv::Mat::zeros(480,640,CV_8U);
 
-    //    *rgbImg = cv::Mat::ones(480, 640, CV_8U);
-    //    *depthImg = cv::Mat::ones(480, 640, CV_8U
+//     //    *rgbImg = cv::Mat::ones(480, 640, CV_8U);
+//     //    *depthImg = cv::Mat::ones(480, 640, CV_8U
 
-    this->img[0] = rgbImg;
-    this->img[1] = depthImg;
+//     this->img[0] = rgbImg;
+//     this->img[1] = depthImg;
 
-    //std::cout << depthImg->type() << std::endl;
-    //delete obj;
+//     //std::cout << depthImg->type() << std::endl;
+//     //delete obj;
 
-    imgFlag  = 1;
+//     imgFlag  = 1;
 
-    return 0;
-}
+//     return 0;
+// }
 
 int CDataset::releaseImage(){
     if(imgFlag == 0){

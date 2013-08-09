@@ -7,10 +7,12 @@
 #include <sstream>
 #include "CConfig.h"
 
-#include "globjloader.h"
+//#include "globjloader.h"
 
 
 //#include "util.h"
+
+void cropImageAndDepth(cv::Mat* rgb, cv::Mat* depth, double mindist, double maxdist);
 
 class CParamset{
 public:
@@ -55,7 +57,7 @@ public:
     virtual ~CDataset();
 
     int loadImage(const CConfig &);
-    int loadImage(CGlObjLoader *obj,const CConfig &conf, const std::string modelName, const CParamset *param);
+    //int loadImage(CGlObjLoader *obj,const CConfig &conf, const std::string modelName, const CParamset *param);
     int releaseImage();
 
     int extractFeatures(const CConfig &);

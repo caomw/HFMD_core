@@ -95,7 +95,7 @@ public:
 private:
     CConfig		conf;
     std::vector<CRTree*>	vTrees;
-    CGlObjLoader *obj;
+    //CGlObjLoader *obj;
 };
 
 //inline void CRForest::extractFeatureChannels(const cv::Mat* img, cv::vector<cv::Mat*>& vImg) const{
