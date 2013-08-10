@@ -674,7 +674,19 @@ void normarizationByDepth(CPatch &patch, const CConfig &config){//, const CConfi
 void normarizationCenterPointP(CPosPatch &patch, const CConfig &config){//, const CConfig &config)const {
   cv::Mat tempDepth = *patch.getDepth();
   cv::Mat depth = tempDepth(patch.getRoi());
+
+  //cv::Mat showDepth = cv::Mat(tempDepth.rows, tempDepth.cols, CV_8UC1);
+
+  //tempDepth.convertTo(showDepth, CV_8UC1, 255 / 1000);
+
+  //cv::namedWindow("test");
+  //cv::imshow("test", showDepth);
+  //cv::waitKey(0);
+  //cv::destroyWindow("test");
+
   //calc width and height scale
+  std::cout << depth.type() << " " << CV_8U << std::endl;
+  std::cout << config.p_height / 2 + 1 <<  config.p_width / 2 + 1 << std::endl;
   double centerDepth = depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist;
   cv::Point currentP = patch.getRelativePosition();
 
@@ -686,7 +698,10 @@ void normarizationCenterPointP(CPosPatch &patch, const CConfig &config){//, cons
   currentP.x /= centerDepth;
   currentP.y /= centerDepth;
 
+  //std::cout << "kokomade" << std::endl;
   //  std::cout << "heknak go " << currentP << std::endl;
   patch.setRelativePosition(currentP);
+
+
 }
 
