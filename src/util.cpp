@@ -9,11 +9,6 @@ float calcSumOfDepth(cv::Mat &depth, const CConfig &conf){
   cv::Mat temp1,temp2;
   depth.convertTo(convertedDepth,CV_8U,255.0/(double)(conf.maxdist - conf.mindist));
 
-  //    cv::namedWindow("test");
-  //    cv::imshow("test",convertedDepth);
-  //    cv::waitKey(0);
-  //    cv::destroyWindow("test");
-
   cv::integral(convertedDepth,integralMat,temp1,temp2,CV_32F);
   return integralMat.at<int>(depth.rows, depth.cols);
 }
@@ -27,7 +22,6 @@ void loadTrainObjFile(CConfig conf, std::vector<CPosDataset*> &posSet)
   boost::uniform_real<> dst(0, 360);
   boost::variate_generator<boost::lagged_fibonacci1279&,
 			   boost::uniform_real<> > rand(genPose, dst);
-
 
   posSet.clear();
 
@@ -66,14 +60,8 @@ void loadTrainObjFile(CConfig conf, std::vector<CPosDataset*> &posSet)
       posTemp->setCenterPoint(cv::Point(320,240));
 
       posSet[j * conf.imagePerTree + i] = posTemp;
-      ///	    std::cout << posSet[j*coni].getModelPath() << std::endl;
     }
-
   }
-
-  // for(int i = 0; i < modelNum * conf.imagePerTree; ++i){
-  //   std::cout << posSet[i].getModelPath() << std::endl;
-  // }
   modelList.close();
 }
 
@@ -133,9 +121,6 @@ void loadTrainPosFile(CConfig conf, std::vector<CPosDataset*> &posSet)
       CPosDataset* posTemp = new CPosDataset();
       std::string nameTemp;
 
-      //            posTemp.angles.clear();
-      //            posTemp.centerPoint.clear();
-
       //read file names
       trainDataList >> nameTemp;
       posTemp->setRgbImagePath(imageFilePath + nameTemp);
@@ -148,7 +133,6 @@ void loadTrainPosFile(CConfig conf, std::vector<CPosDataset*> &posSet)
       //read class name
       std::string tempClassName;
       trainDataList >> tempClassName;
-      //temp.className.push_back(tempClassName);
       posTemp->setClassName(tempClassName);
 
       // read image size
@@ -175,7 +159,6 @@ void loadTrainPosFile(CConfig conf, std::vector<CPosDataset*> &posSet)
     trainDataList.close();
   }
 
-  //int dataSetNum = tempDataSet.size();
   int dataOffset = 0;
   database.show();
   for(unsigned int j = 0;j < database.vNode.size(); j++){
@@ -190,12 +173,6 @@ void loadTrainPosFile(CConfig conf, std::vector<CPosDataset*> &posSet)
     }
     dataOffset += database.vNode.at(j).instances;
   }
-
-
-  //    std::cout << "show chosen dataset" << std::endl;
-  //    for(int i = 0; i < dataSet.size(); ++i){
-  //        dataSet.at(i).showDataset();
-  //    }
 }
 
 void loadTrainNegFile(CConfig conf, std::vector<CNegDataset*> &negSet)
@@ -305,6 +282,8 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
 	//std::cout << centerDepthFlag << std::endl;
 
 	//if (conf.learningMode == 2){// || pixNum > 0){
+
+
 	if(centerDepthFlag != 1){
 	  if(conf.learningMode != 2){
 	    normarizationByDepth(posTemp , conf);

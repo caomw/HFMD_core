@@ -1,5 +1,4 @@
 #include <boost/timer.hpp>
-//#include <boost/timer/timer.hpp>
 #include "CRForest.h"
 
 paramHist& paramHist::operator +(const paramHist& obj){ 
@@ -31,10 +30,6 @@ double euclideanDist(cv::Point p, cv::Point q)
 }
 
 void CRForest::learning(){
-  //obj = new CGlObjLoader();
-
-  //glGetDoublev(GL_MODELVIEW_MATRIX, matrix);
-  //obj->invertMatrix(matrix, matrixI);
   
 #pragma omp parallel
   {
@@ -43,8 +38,6 @@ void CRForest::learning(){
       growATree(i);
     } // end tree loop
   }
-
-  //delete obj;
 }
 
 void CRForest::growATree(const int treeNum){
@@ -74,22 +67,6 @@ void CRForest::growATree(const int treeNum){
   CClassDatabase tempClassDatabase;
   // extract pos features and register classDatabase
   for(unsigned int i = 0; i < posSet.size(); ++i){
-    //std::cout << i << std::endl;
-
-    //std::cout << posSet.at(i).rgb << std::endl;
-    //        if(posSet.at(i).loadImage(conf) == -1 && conf.learningMode != 2){
-    //            exit(-1);
-    //        }
-
-    //posSet.at(i).extractFeatures(conf);
-
-    //std::cout << posSet.size() << std::endl;
-
-    //tempClassDatabase.show();
-    //cv::Mat test = cv::Mat(640,480);
-    //    tempClassDatabase.add(
-
-    
     tempClassDatabase.add(posSet[i]->getParam()->getClassName(),cv::Size(),0);
   }
 
@@ -98,31 +75,11 @@ void CRForest::growATree(const int treeNum){
 
   std::cout << "dataset loaded" << std::endl;
 
-  // initialize class database
-  //classDatabase.clear();
-
   std::cout << "generating appearance from 3D model!" << std::endl;
   // extract pos features and register classDatabase
   for(unsigned int i = 0; i < posSet.size(); ++i){
-    //std::cout << i << std::endl;
-
-    //std::cout << posSet.at(i).rgb << std::endl;
-    //#pragma omp critical
-    //   if(conf.modelLearningMode){
-    //#pragma omp critical
-    //posSet.at(i)->loadImage(obj,conf, posSet.at(i)->getModelPath(), posSet.at(i)->getParam());
-    //}else{
     posSet.at(i)->loadImage(conf);
-    //}
-    //        if(imgload == -1 && conf.learningMode != 2){
-    //            std::cout << "can't load image files" << std::endl;
-    //            exit(-1);
-    //        }
     posSet.at(i)->extractFeatures(conf);
-    //std::cout << posSet.at(i).img.at(1)->type() << std::endl;
-    //std::cout << "detayo" << std::endl;
-    //std::cout << posSet.size() << std::endl;
-
     classDatabase.add(posSet.at(i)->getParam()->getClassName(),posSet.at(i)->img.at(0)->size(),0);
     pBar(i,posSet.size(),50);
   }
@@ -132,8 +89,6 @@ void CRForest::growATree(const int treeNum){
 
   // extract neg features
   for(unsigned int i = 0; i < negSet.size(); ++i){
-    //        if(negSet.at(i).getModel() != NULL)
-    //            negSet.at(i).loadImage(conf, negSet.at(i).getModelPath(), posSet.at(i))
     negSet.at(i)->loadImage(conf);
     negSet.at(i)->extractFeatures(conf);
   }
@@ -141,61 +96,16 @@ void CRForest::growATree(const int treeNum){
   std::vector<CPosDataset*> tempPosSet(0);
   int currentClass = treeNum % tempClassDatabase.vNode.size();
 
-  //std::cout << "okashiina" << std::endl;
-  // if(!conf.modelLearningMode)
   for(unsigned int i = 0; i < posSet.size(); ++i){
-    //    cv::namedWindow("test");
-    //cv::imshow("test", *posSet[i]->img[0]);
-    //    cv::waitKey(0);
-    //    cv::destroyWindow("test");
-    
     if(tempClassDatabase.search(posSet.at(i)->getClassName()) == currentClass){
       tempPosSet.push_back(posSet.at(i));
-      //std::cout << "teketeke" << std::endl;
     }else{
-      //      negSet.push_back(convertPosToNeg2(posSet.at(i)));
       negSet.push_back((CNegDataset*)posSet[i]);
-      //std::cout << "negneg" << std::endl;
     }
   }
 
   posSet = tempPosSet;
 
-  // for(int i = 0; i < negSet.size(); ++i){
-  //   cv::namedWindow("test");
-  //   cv::imshow("test", *negSet[i]->img.at(0));
-  //   cv::waitKey(0);
-  // }
-
-  //cv::destroyWindow("test");
-
-  //if(!conf.modelLearningMode)
-  //tempClassDatabase.show();
-
-  //tempPosSet.clear(); 
-
-  //for(unsigned int i = 0; i < posSet.size(); ++i){
-  //  std::cout << posSet[i].getClassName() << std::endl;
-  //  CPosDataset tpos = posSet[i];
-
-  //}
-
-  // for(unsigned int i = 0; i < posSet.size(); ++i){
-  //   if(tempClassDatabase.search(posSet.at(i).getClassName()) == currentClass){
-  //     //std::cout << posSet.at(i).getClassName() << std::endl;
-  //     tempPosSet.push_back(posSet.at(i));
-  //     //std::cout << "teketeke" << std::endl;
-  //   }else{
-  //     //std::cout << "haitta" << std::endl;
-  //     //	negSet.push_back(convertPosToNeg2(posSet.at(i)));
-  //     //std::cout << "negneg" << std::endl;
-  //   }
-  // }
-  // posSet = tempPosSet;
-  // std::cout << "bunrui" << std::endl;
-
-
-  
   CRTree *tree = new CRTree(conf.min_sample, conf.max_depth, classDatabase.vNode.size(),this->classDatabase);
   std::cout << "tree created" << std::endl;
   
@@ -208,22 +118,14 @@ void CRForest::growATree(const int treeNum){
   for(unsigned int j = 0; j < posPatch.size(); ++j)
     patchClassNum.at(classDatabase.search(posPatch.at(j).getClassName()))++;
 
-  // grow tree
-  //vTrees.at(treeNum)->growTree(vPatches, 0,0, (float)(vPatches.at(0).size()) / ((float)(vPatches.at(0).size()) + (float)(vPatches.at(1).size())), conf, gen, patchClassNum);
-  //#pragma omp parallel
   tree->growTree(posPatch,negPatch, 0,0, ((float)posPatch.size() / (float)(posPatch.size() + negPatch.size())), conf, patchClassNum);
-
-  //    cv::namedWindow("test");
-  //    cv::imshow("test", *posSet.at(0).feature.at(3));
-  //    cv::waitKey(0);
-  //    cv::destroyAllWindows();
-
+  
   // save tree
   sprintf(buffer, "%s%03d.txt",
 	  conf.treepath.c_str(), treeNum + conf.off_tree);
   std::cout << "tree file name is " << buffer << std::endl;
   tree->saveTree(buffer);
-
+  
   // save class database
   sprintf(buffer, "%s%s%03d.txt",
 	  conf.treepath.c_str(),
@@ -231,48 +133,18 @@ void CRForest::growATree(const int treeNum){
   std::cout << "write tree data" << std::endl;
   classDatabase.write(buffer);
 
-  //double time = t.elapsed();
-
-  //std::cout << "tree " << treeNum << " calicuration time is " << time << std::endl;
-
   sprintf(buffer, "%s%03d_timeResult.txt",conf.treepath.c_str(), treeNum + conf.off_tree);
   std::fstream lerningResult(buffer, std::ios::out);
   if(lerningResult.fail()){
     std::cout << "can't write result" << std::endl;
   }
 
-  //lerningResult << time << std::endl;
-
   lerningResult.close();
 
   delete tree;
 
-
   posPatch.clear();
   negPatch.clear();
-
-  //    for(int i = 0; i< posSet.size(); ++i){
-  //        Cv::Namedwindow("Test");
-  //        cv::imshow("test", *posSet.at(i).img.at(0));
-  //        cv::waitKey(0);
-  //        cv::destroyWindow("test");
-  //    }
-
-
-  //    for(int i = 0; i < posSet.size(); ++i){
-  //        posSet.at(i).releaseImage();
-  //    }
-
-  //    for(int i = 0; i< posSet.size(); ++i){
-  //        cv::namedWindow("test");
-  //        cv::imshow("test", *posSet.at(i).feature.at(0));
-  //        cv::waitKey(0);
-  //        cv::destroyWindow("test");
-  //    }
-
-  //    for(int i = 0; i < posSet.size(); ++i){
-  //        posSet.at(i).releaseFeatures();
-  //    }
 
   for(unsigned int i = 0; i < posSet.size(); ++i)
     delete posSet[i];
@@ -292,7 +164,6 @@ void CRForest::loadForest(){
     sprintf(buffer2, "%s%s%03d.txt", conf.treepath.c_str(), conf.classDatabaseName.c_str(), i);
     vTrees[i] = new CRTree(buffer, buffer2, conf);
 
-    //std::cout << buffer2 << std::endl;
     classDatabase.read(buffer2);
     pBar(i,vTrees.size(),50);
   }
@@ -307,87 +178,34 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
   std::vector<CTestPatch> testPatch;
   std::vector<const LeafNode*> result;
 
-  //std::vector<const LeafNode*> storedLN(0);
-  //std::vector<std::vector<CParamset> > cluster(0);
-  //std::vector<CParamset> clusterMean(0);
-
   cv::vector<cv::Mat> outputImage(classNum);
   cv::vector<cv::Mat> voteImage(classNum);//voteImage(classNum);
-  //cv::vector<cv::Mat_<std::vector<CParamset> > > voteParam(classNum);
-  
   std::vector<int> totalVote(classNum,0);
-
-  //boost::timer t;
-
-  //boost::timer::auto_cpu_timer t;
-  //boost::timer::nanosecond_type time;
-
   std::vector<paramHist**> voteParam2(classNum);
 
-  //timer.start();
-
-  //testSet.loadImage(conf);
   testSet.extractFeatures(conf);
-
- 
 
   std::cout << "extracted feature " << std::endl;// << t.elapsed() << " sec" << std::endl;
     
-  //testSet.releaseImage();
-
-  //t.restart()
   // image row and col
   int imgRow = testSet.img.at(0)->rows;
   int imgCol = testSet.img.at(0)->cols;
-
-  //  std::cout << imgRow << " " << imgCol << std::endl;
-
-
-  //  std::cout << classNum << std::endl;
-
   cv::Mat votedVectors = cv::Mat::zeros(imgRow, imgCol, CV_8UC3);
   
-  //#pragma omp parallel
-  //{
-  //#pragma omp for
-
-  //paramHist  testhist;
-
-
   std::cout << (int)((double)imgCol / (double)conf.stride + 0.5) +1 << std::endl;
 
-  //std::cout << sizeof(testhist) << std::endl;
   for(int i = 0; i < classNum; ++i){
-    //    std::cout << "test" << std::endl;
-    
     outputImage[i] = testSet.img[0]->clone();
     voteImage[i] = cv::Mat::zeros(imgRow,imgCol,CV_32FC1);
     voteParam2[i] = new paramHist*[(int)((double)imgRow / (double)conf.stride + 0.5) + 1];
     for(int j = 0; j < (int)((double)imgRow / (double)conf.stride + 0.5); ++j)
       voteParam2[i][j] = new paramHist[(int)((double)imgCol/ (double)conf.stride + 0.5) + 1];
   }
-  //}
-  
-  //std::cout << "created voteParam" << std::endl;
-  
-  //std::cout << "vote image created" << std::endl;
-  //std::cout << std::endl;
-  //paramHist voteParam[testSet.img.at(0)->rows][testSet.img.at(0)->cols][classNum];
-  // extract feature from test image
-  //features.clear();
-  //extractFeatureChannels(image.at(0), features);
-  // add depth image to features
-  //features.push_back(image.at(1));
-  // extract patches from features
 
   extractTestPatches(&testSet,testPatch,this->conf);
 
-  //std::cout << "extracted feature " << t.elapsed() << " sec" << std::endl;
-
   std::cout << "patch num: " << testPatch.size() << std::endl;
   std::cout << "detecting..." << std::endl;
-  // regression and vote for every patch
-
   std::cout << "class num = " << classNum << std::endl;
 
   for(unsigned int j = 0; j < testPatch.size(); ++j){
@@ -400,7 +218,6 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 #pragma omp parallel
       {
 #pragma omp for
-
 	for(unsigned int l = 0; l < result.at(m)->pfg.size(); ++l){
 	  if(result.at(m)->pfg.at(l) > 0.9){
 	    int cl = classDatabase.search(result.at(m)->param.at(l).at(0).getClassName());
