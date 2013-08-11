@@ -31,13 +31,13 @@ double euclideanDist(cv::Point p, cv::Point q)
 
 void CRForest::learning(){
   
-#pragma omp parallel
-  {
-#pragma omp for
+  //#pragma omp parallel
+  //{
+  //#pragma omp for
     for(int i = 0;i < conf.ntrees; ++i){
       growATree(i);
     } // end tree loop
-  }
+    //}
 }
 
 void CRForest::growATree(const int treeNum){

@@ -118,6 +118,19 @@ int CDataset::loadImage(const CConfig &conf){
         }
     }
 
+    std::cout << "depth image " << depthImg->rows << " " << depthImg->cols << std::endl;
+    cv::Mat showDepth = cv::Mat(depthImg->rows, depthImg->cols, CV_8U);
+    depthImg->convertTo(showDepth, CV_8U, 255.0 / 1000.0);
+
+    // cv::namedWindow("test");
+    // cv::imshow("test", *rgbImg);
+    // cv::namedWindow("test2");
+    // cv::imshow("test2", showDepth);
+
+    // cv::waitKey(0);
+
+    // cv::destroyWindow("test");
+    // cv::destroyWindow("test2");
 
     if(!conf.demoMode){
         if(conf.learningMode != 2)
@@ -126,6 +139,7 @@ int CDataset::loadImage(const CConfig &conf){
         if(conf.learningMode != 2)
             cropImageAndDepth(img.at(0), img.at(1), conf.mindist, conf.maxdist);
     }
+
 
 
 
@@ -312,6 +326,20 @@ int CDataset::extractFeatures(const CConfig& conf){
 
         featureFlag  = 1;
     }
+
+    //cv::Mat showDepth = cv::Mat(feature[1]->rows, feature[0]->cols, CV_8U);
+    //feature[1]->convertTo(showDepth, CV_8U, 255.0/1000.0);
+    
+    //    cv::namedWindow("test");
+    //    cv::imshow("test", *feature[0]);
+    //    cv::namedWindow("test2");
+    //    cv::imshow("test2", showDepth);
+
+    //    cv::waitKey(0);
+
+    //    cv::destroyWindow("test");
+    //    cv::destroyWindow("test2");
+
 
     return 0;
 }
