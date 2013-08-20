@@ -44,8 +44,16 @@ std::string CParamset::outputParam(){
 void cropImageAndDepth(cv::Mat* rgb, cv::Mat* depth, double mindist, double maxdist){
     cv::Mat depthForView = cv::Mat(depth->rows, depth->cols, CV_8U);
 
+    if(depth->type() != CV_16U){
+      std::cout << "error! input depth image is wrong type!!!" << std::endl;
+      exit(-1);
+    }
+
     cv::Mat allMinDepth = cv::Mat::ones(depth->rows, depth->cols, CV_16U) * (ushort)mindist;
     cv::Mat allMaxDepth = cv::Mat::ones(depth->rows, depth->cols, CV_16U) * (ushort)maxdist;
+
+
+    std::cout << allMaxDepth.type() << " " << depth->type() << std::endl;
 
     cv::min(*depth, allMaxDepth, *depth);
     cv::max(*depth, allMinDepth, *depth);
@@ -118,7 +126,7 @@ int CDataset::loadImage(const CConfig &conf){
         }
     }
 
-    std::cout << "depth image " << depthImg->rows << " " << depthImg->cols << std::endl;
+    //std::cout << "depth image " << depthImg->rows << " " << depthImg->cols << std::endl;
     cv::Mat showDepth = cv::Mat(depthImg->rows, depthImg->cols, CV_8U);
     depthImg->convertTo(showDepth, CV_8U, 255.0 / 1000.0);
 

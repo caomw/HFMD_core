@@ -243,21 +243,21 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
   int classNum = 0;
   cv::Mat roi;
 
-    cv::Mat showDepth = cv::Mat(posSet[0]->img[1]->rows, posSet[0]->img[1]->cols, CV_8U);
-    posSet[0]->img[1]->convertTo(showDepth, CV_8U, 255.0/1000.0);
+    // cv::Mat showDepth = cv::Mat(posSet[0]->img[1]->rows, posSet[0]->img[1]->cols, CV_8U);
+    // posSet[0]->img[1]->convertTo(showDepth, CV_8U, 255.0/1000.0);
     
-    cv::namedWindow("test");
-       cv::imshow("test", *posSet[0]->img[0]);
-       cv::namedWindow("test2");
-       cv::imshow("test2", showDepth);
+    // cv::namedWindow("test");
+    //    cv::imshow("test", *posSet[0]->img[0]);
+    //    cv::namedWindow("test2");
+    //    cv::imshow("test2", showDepth);
 
-       cv::waitKey(0);
+    //    cv::waitKey(0);
 
-       cv::destroyWindow("test");
-       cv::destroyWindow("test2");
+    //    cv::destroyWindow("test");
+    //    cv::destroyWindow("test2");
 
 
-       std::cout << posSet[1]->img[1]->type() << " " << CV_16U << std::endl;
+    //    std::cout << posSet[1]->img[1]->type() << " " << CV_16U << std::endl;
 
   posPatch.clear();
 
@@ -705,16 +705,18 @@ void normarizationCenterPointP(CPosPatch &patch, const CConfig &config){//, cons
   //std::cout << depth.type() << " " << CV_8U << std::endl;
   //std::cout << config.p_height / 2 + 1 <<  config.p_width / 2 + 1 << std::endl;
   //  std::cout << "depth rows and cols " << depth.rows << " " << depth.cols << std::endl;
-//double centerDepth = depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist;
+  double centerDepth = depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist;
   cv::Point currentP = patch.getRelativePosition();
 
-  //  std::cout << "current p " << currentP << std::endl;
+
 
   //    currentP.x = currentP.x * 10;
-  //  currentP.y *= 1000;
-  //currentP.x *= 1000;
-  //currentP.x /= centerDepth;
-  //currentP.y /= centerDepth;
+  currentP.y *= 1000;
+  currentP.x *= 1000;
+  currentP.x /= (config.maxdist - config.mindist - centerDepth);
+  currentP.y /= (config.maxdist - config.mindist - centerDepth);
+
+  //std::cout << "current p " << currentP << std::endl;
 
   //std::cout << "kokomade" << std::endl;
   //  std::cout << "heknak go " << currentP << std::endl;

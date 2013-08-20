@@ -31,13 +31,13 @@ double euclideanDist(cv::Point p, cv::Point q)
 
 void CRForest::learning(){
   
-  //#pragma omp parallel
-  //{
-  //#pragma omp for
+  #pragma omp parallel
+  {
+  #pragma omp for
     for(int i = 0;i < conf.ntrees; ++i){
       growATree(i);
     } // end tree loop
-    //}
+    }
 }
 
 void CRForest::growATree(const int treeNum){
@@ -85,7 +85,6 @@ void CRForest::growATree(const int treeNum){
   }
   std::cout << std::endl;
   classDatabase.show();
-
 
   // extract neg features
   for(unsigned int i = 0; i < negSet.size(); ++i){
@@ -192,7 +191,8 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
   int imgCol = testSet.img.at(0)->cols;
   cv::Mat votedVectors = cv::Mat::zeros(imgRow, imgCol, CV_8UC3);
   
-  std::cout << (int)((double)imgCol / (double)conf.stride + 0.5) +1 << std::endl;
+  std::cout << "vote image col " << (int)((double)imgCol / (double)conf.stride + 0.5) +1 << std::endl;
+  std::cout << "vote image row " << (int)((double)imgRow / (double)conf.stride + 0.5) +1 << std::endl;
 
   for(int i = 0; i < classNum; ++i){
     outputImage[i] = testSet.img[0]->clone();
@@ -219,7 +219,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
       {
 #pragma omp for
 	for(unsigned int l = 0; l < result.at(m)->pfg.size(); ++l){
-	  if(result.at(m)->pfg.at(l) > 0.9){
+	  if(result.at(m)->pfg.at(l) > 0.5){
 	    int cl = classDatabase.search(result.at(m)->param.at(l).at(0).getClassName());
 
 	    for(unsigned int n = 0; n < result.at(m)->param.at(cl).size(); ++n){
@@ -233,7 +233,8 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 		cv::Mat realDepth = tempDepth(tempRect);
 		double centerDepth = realDepth.at<ushort>(tempRect.height / 2 + 1, tempRect.width / 2 + 1) + conf.mindist;
 
-		rPoint *= centerDepth;
+		rPoint.x *= (conf.maxdist - conf.mindist - centerDepth);
+		rPoint.y *= (conf.maxdist - conf.mindist - centerDepth);
 		rPoint.x /= 1000;
 		rPoint.y /= 1000;
 
@@ -248,16 +249,21 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 		double v = result.at(m)->pfg.at(cl) / ( result.size() * result.at(m)->param.at(l).size());
 
 		
-		voteImage.at(cl).at<float>(pos.y,pos.x) += v;//(result.at(m)->pfg.at(c) - 0.9);// * 100;//weight * 500;
+		voteImage.at(cl).at<float>(pos.y,pos.x) += v * 1000;//(result.at(m)->pfg.at(c) - 0.9);// * 100;//weight * 500;
 
 		//		std::cout << "vote param" << std::endl;
 
 		//		std::cout << (int)((double)pos.y / (double)conf.stride + 0.5) << std::endl;
 		//		std::cout << (int)((double)pos.x / (double)conf.stride + 0.5) << std::endl;
 
-		voteParam2.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].roll.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[0]) += v * 10000;
-		voteParam2.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].pitch.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[1]) += v * 10000;
-		voteParam2.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].yaw.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[2]) += v * 10000;
+
+		if((int)((double)pos.y / (double)conf.stride) < (int)((double)imgRow / (double)conf.stride + 0.5) && (int)((double)pos.x / (double)conf.stride) < (int)((double)imgCol / (double)conf.stride + 0.5)){
+		//std::cout << v << std::endl;
+		//std::cout << (int)((double)pos.y / (double)conf.stride) << " " << (int)((double)pos.x / (double)conf.stride) << std::endl;
+		voteParam2.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].roll.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[0]) += v * 1000;
+		voteParam2.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].pitch.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[1]) += v * 1000;
+		voteParam2.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].yaw.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[2]) += v * 1000;
+		}
 		//std::cout << result.at(m)->param.at(l).at(n).getAngle() << std::endl;
 		//std::cout << v << std::endl;
 
@@ -303,7 +309,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 #pragma omp for
     // find balance by mean shift
     for(int i = 0; i < classNum; ++i){
-      cv::GaussianBlur(voteImage.at(i),voteImage.at(i), cv::Size(21,21),0);
+      cv::GaussianBlur(voteImage.at(i),voteImage.at(i), cv::Size(41,41),0);
     }
   }
 
@@ -346,19 +352,19 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 
   cv::Mat showVoteImage = cv::Mat(voteImage.at(0).rows, voteImage.at(0).cols, CV_8UC1);
 
-  voteImage.at(0).convertTo(showVoteImage, CV_8UC1, 254 * 100);
+  voteImage.at(2).convertTo(showVoteImage, CV_8UC1, 254);
 
-  if(!conf.demoMode){
-    cv::namedWindow("test");
-    cv::imshow("test", showVoteImage);
-    cv::namedWindow("test2");
-    cv::imshow("test2", outputImage[0]);
-    cv::namedWindow("test3");
-    cv::imshow("test3", votedVectors);
-    cv::imwrite("hanabi.png",votedVectors);
+  // if(!conf.demoMode){
+  //   cv::namedWindow("test");
+  //   cv::imshow("test", showVoteImage);
+  //   cv::namedWindow("test2");
+  //   cv::imshow("test2", outputImage[0]);
+  //   cv::namedWindow("test3");
+  //   cv::imshow("test3", votedVectors);
+  //   cv::imwrite("hanabi.png",votedVectors);
   
-    cv::waitKey(0);
-  }
+  //   cv::waitKey(0);
+  // }
   //cv::destroyWindow("test");
   //cv::destroyWindow("test2")
 
@@ -389,10 +395,18 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 
     for(int x = 0; x < conf.paramRadius; ++x){
       for(int y = 0; y < conf.paramRadius; ++y){
-	if( maxLoc.x + x < imgCol &&  maxLoc.y + y < imgRow)
+	if(maxLoc.x + x >= 0 && maxLoc.y + y >= 0 && maxLoc.x + x < imgCol - conf.stride &&  maxLoc.y + y < imgRow - conf.stride){
 	  hist += voteParam2.at(c)[(int)((double)(maxLoc.y + y) / (double)conf.stride)][(int)((double)(maxLoc.x + x) / (double)conf.stride)];
-	if(maxLoc.x - x > 0 && maxLoc.y - y > 0)
+	}
+	if(maxLoc.x - x >= 0 && maxLoc.y - y >= 0 && maxLoc.x - x < imgCol - conf.stride &&  maxLoc.y - y < imgRow - conf.stride){
+	  
+	  //std::cout << (int)((double)(maxLoc.y - y) / (double)conf.stride) << " " << (int)((double)(maxLoc.x - x) / (double)conf.stride) << std::endl;
+	  //hist.showHist();
+	  //voteParam2.at(c)[(int)((double)(maxLoc.y - y) / (double)conf.stride)][(int)((double)(maxLoc.x - x) / (double)conf.stride)].showHist();
 	  hist += voteParam2.at(c)[(int)((double)(maxLoc.y - y) / (double)conf.stride)][(int)((double)(maxLoc.x - x) / (double)conf.stride)];
+	
+
+	}
       }
     }
 
@@ -415,6 +429,9 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
     cv::rectangle(outputImage.at(c),outRect,cv::Scalar(0,0,200),3);
     cv::putText(outputImage.at(c),classDatabase.vNode.at(c).name,cv::Point(outRect.x,outRect.y),cv::FONT_HERSHEY_SIMPLEX,1.2, cv::Scalar(0,0,200), 2, CV_AA);
 
+	  cv::circle(outputImage[0], maxLoc, 10, cv::Scalar(200,0,0));
+	  cv::putText(outputImage[0],classDatabase.vNode.at(c).name,maxLoc,cv::FONT_HERSHEY_SIMPLEX,1.2, cv::Scalar(200,0,0), 2, CV_AA);
+
     // draw grand truth to result image
     if(!conf.demoMode){
       for(unsigned int i = 0; i < testSet.param.size(); ++i){
@@ -422,11 +439,14 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 	if(tempClassNum != -1){
 	  cv::Size tempSize = classDatabase.vNode.at(tempClassNum).classSize;
 	  cv::Rect_<int> outRect(testSet.param.at(i).getCenterPoint().x - tempSize.width / 2,testSet.param.at(i).getCenterPoint().y - tempSize.height / 2 , tempSize.width,tempSize.height);
-	  cv::rectangle(outputImage.at(tempClassNum),outRect,cv::Scalar(200,0,0),3);
-	  cv::putText(outputImage.at(tempClassNum),classDatabase.vNode.at(c).name,cv::Point(testSet.param.at(i).getCenterPoint().x, testSet.param.at(i).getCenterPoint().y),cv::FONT_HERSHEY_SIMPLEX,1.2, cv::Scalar(200,0,0), 2, CV_AA);
+	  //cv::rectangle(outputImage[0],outRect,cv::Scalar(200,0,0),3);
+	  cv::circle(outputImage[0], maxLoc, 20, cv::Scalar(200,0,0));
+	  cv::putText(outputImage[0],classDatabase.vNode.at(c).name,maxLoc,cv::FONT_HERSHEY_SIMPLEX,1.2, cv::Scalar(200,0,0), 2, CV_AA);
 	}
       }
     }
+
+
 
     // show result
     std::cout << c << " Name : " << classDatabase.vNode.at(c).name <<
@@ -442,6 +462,8 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
       std::string outputName = opath + PATH_SEP + "detectionResult" + "_" + classDatabase.vNode.at(c).name + ".png";
       cv::imwrite(outputName.c_str(),outputImage.at(c));
     }
+
+    
 
     CDetectedClass detectedClass;
     detectedClass.name = classDatabase.vNode.at(c).name;
@@ -466,6 +488,19 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
     detectedClass.score = voteImage.at(c).at<float>(maxLoc.y, maxLoc.x);
     detectResult.detectedClass.push_back(detectedClass);
   } // for every class
+
+    if(!conf.demoMode){
+      cv::namedWindow("test");
+      cv::imshow("test", showVoteImage);
+      cv::namedWindow("test2");
+      cv::imshow("test2", outputImage[0]);
+      cv::namedWindow("test3");
+      cv::imshow("test3", votedVectors);
+      cv::imwrite("hanabi.png",votedVectors);
+  
+      cv::waitKey(0);
+    }
+
 
   for(int k = 0; k < classNum; ++k){
     for(int i = 0; i < (int)((double)imgRow / (double)conf.stride + 0.5); ++i){

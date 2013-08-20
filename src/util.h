@@ -63,8 +63,13 @@ public:
 };
 
 class nCk{
-public:
-    std::set<int> generate(int n, int k){
+ public:
+  std::set<int> generate(int n, int k){
+    if(n <= k){
+      std::cout << "n must be bigger than k" << std::endl;
+      exit(-1);
+    }
+
         std::set<int> cmb;
         int j;
         //srand(time(NULL));
@@ -74,7 +79,7 @@ public:
                 > rand( gen, dst );
 
         for(int i = n - k; i < n; i++){
-            j = rand()%i;
+            j = rand() % i;
             if(cmb.find(j) == cmb.end())
                 cmb.insert(j);
             else
