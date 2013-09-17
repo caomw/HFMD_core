@@ -352,7 +352,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 
   cv::Mat showVoteImage = cv::Mat(voteImage.at(0).rows, voteImage.at(0).cols, CV_8UC1);
 
-  voteImage.at(2).convertTo(showVoteImage, CV_8UC1, 254);
+  //voteImage.at(0).convertTo(showVoteImage, CV_8UC1, 254);
 
   // if(!conf.demoMode){
   //   cv::namedWindow("test");
