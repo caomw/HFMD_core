@@ -13,8 +13,7 @@ paramHist& paramHist::operator +=(const paramHist& obj){
   this->roll += obj.roll;
   this->pitch += obj.pitch;
 
-  //std::cout << "this " << this->yaw << std::endl;
-  //std::cout << "obj " << obj.yaw << std::endl;
+  //  std::cout << 
   this->yaw += obj.yaw;
 
   return *this;
@@ -187,8 +186,6 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 
   testSet.extractFeatures(conf);
 
-  std::cout << testSet.getRgbImagePath() << std::endl;
-
   std::cout << "extracted feature " << std::endl;// << t.elapsed() << " sec" << std::endl;
     
   // image row and col
@@ -206,7 +203,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
     for(int j = 0; j < (int)((double)imgRow / (double)conf.stride + 0.5); ++j)
       voteParam2[i][j] = new paramHist[(int)((double)imgCol/ (double)conf.stride + 0.5) + 1];
 
-    //std::cout << (int)((double)imgRow / (double)conf.stride + 0.5) << std::endl;
+    std::cout << (int)((double)imgRow / (double)conf.stride + 0.5) << std::endl;
   }
 
   extractTestPatches(&testSet,testPatch,this->conf);
@@ -239,7 +236,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 		cv::Rect tempRect = testPatch[j].getRoi();
 		cv::Mat realDepth = tempDepth(tempRect);
 		double centerDepth = realDepth.at<ushort>(tempRect.height / 2 + 1, tempRect.width / 2 + 1) + conf.mindist;
-		
+
 		rPoint.x *= (conf.maxdist - conf.mindist - centerDepth);
 		rPoint.y *= (conf.maxdist - conf.mindist - centerDepth);
 		rPoint.x /= 1000;
@@ -402,16 +399,11 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 
     for(int x = 0; x < conf.paramRadius - 1; ++x){
       for(int y = 0; y < conf.paramRadius - 1; ++y){
-	//
 	if(maxLoc.x + x >= 0 && maxLoc.y + y >= 0 && maxLoc.x + x < imgCol - conf.stride &&  maxLoc.y + y < imgRow - conf.stride){
-	  //std::cout << (int)((double)(maxLoc.y + y) / (double)conf.stride) << std::endl;
-	  //	  std::cout << x << " " << y << " " << conf.paramRadius << std::endl;
-	  
+
+	  std::cout << 
 	  hist += voteParam2.at(c)[(int)((double)(maxLoc.y + y) / (double)conf.stride)][(int)((double)(maxLoc.x + x) / (double)conf.stride)];
-
-
 	}
-
 	if(maxLoc.x - x >= 0 && maxLoc.y - y >= 0 && maxLoc.x - x < imgCol - conf.stride &&  maxLoc.y - y < imgRow - conf.stride){
 	  
 	  //std::cout << (int)((double)(maxLoc.y - y) / (double)conf.stride) << " " << (int)((double)(maxLoc.x - x) / (double)conf.stride) << std::endl;
