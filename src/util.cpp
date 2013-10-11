@@ -83,7 +83,7 @@ void loadTrainPosFile(CConfig conf, std::vector<CPosDataset*> &posSet)
   //read train data folder list
   std::ifstream in(traindatafilepath.c_str());
   if(!in.is_open()){
-    std::cout << "train data floder list is not found!" << std::endl;
+    std::cout << "train data floder list " << traindatafilepath.c_str() << " is not found!" << std::endl;
     exit(1);
   }
 
