@@ -154,6 +154,7 @@ void CRForest::growATree(const int treeNum){
     delete negSet[i];
 
   posSet.clear();
+  std::cout << negSet.size() << std::endl;
   negSet.clear();
 }
 
@@ -538,5 +539,4 @@ void CRForest::regression(std::vector<const LeafNode*>& result, CTestPatch &patc
     result[i] = vTrees[i]->regression(patch);
   }
 }
-
 

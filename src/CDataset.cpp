@@ -53,7 +53,7 @@ void cropImageAndDepth(cv::Mat* rgb, cv::Mat* depth, double mindist, double maxd
     cv::Mat allMaxDepth = cv::Mat::ones(depth->rows, depth->cols, CV_16U) * (ushort)maxdist;
 
 
-    std::cout << allMaxDepth.type() << " " << depth->type() << std::endl;
+    //std::cout << allMaxDepth.type() << " " << depth->type() << std::endl;
 
     cv::min(*depth, allMaxDepth, *depth);
     cv::max(*depth, allMinDepth, *depth);

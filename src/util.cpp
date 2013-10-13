@@ -264,9 +264,9 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
   tempRect.width  = conf.p_width;
   tempRect.height = conf.p_height;
 
-  std::cout << "image num is " << posSet.size();
+  std::cout << "image num is " << posSet.size() << std::endl;;
 
-  std::cout << "extracting patch from image" << std::endl;
+  std::cout << "extracting pos patch from image" << std::endl;
   for(unsigned int l = 0;l < posSet.size(); ++l){
     for(int j = 0; j < posSet.at(l)->img.at(0)->cols - conf.p_width; j += conf.stride){
       for(int k = 0; k < posSet.at(l)->img.at(0)->rows - conf.p_height; k += conf.stride){
@@ -322,10 +322,10 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
     }//y
   }//allimages
 
-  for(unsigned int w = 0; w < patchPerClass.size(); ++w){
-    std::cout << patchPerClass.at(w).size() << " ";
-  }
-  std::cout << std::endl;
+  // for(unsigned int w = 0; w < patchPerClass.size(); ++w){
+  //   std::cout << patchPerClass.at(w).size() << " ";
+  // }
+  // std::cout << std::endl;
 
   std::vector<int> patchNum(patchPerClass.size(),conf.patchRatio);
 
@@ -336,9 +336,9 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
       patchNum.at(i) = conf.patchRatio * conf.acPatchRatio;
   }
 
-  for(unsigned int w = 0; w < patchPerClass.size(); ++w){
-    std::cout << patchPerClass.at(w).size() << " ";
-  }
+  // for(unsigned int w = 0; w < patchPerClass.size(); ++w){
+  //   std::cout << patchPerClass.at(w).size() << " ";
+  // }
 
   // choose patch from each image
   for(unsigned int i = 0; i < patchPerClass.size(); ++i){
@@ -544,6 +544,7 @@ void CClassDatabase::add(std::string str, cv::Size size, uchar depth){
       return;
     }
   }
+  std::cout << str << " " << size << " " << depth << std::endl;
   vNode.push_back(databaseNode(str,size,depth));
   return;
 }
@@ -622,9 +623,8 @@ int CClassDatabase::search(std::string str) const{
 
 void normarizationByDepth(CPatch &patch, const CConfig &config){//, const CConfig &config)const {
   cv::Mat tempDepth = *patch.getDepth();
-
   cv::Mat depth = tempDepth(patch.getRoi());
-
+  double widthSca, heightSca;
   //std::cout << depth << std::endl;
 
   //    cv::namedWindow("test");
@@ -635,7 +635,7 @@ void normarizationByDepth(CPatch &patch, const CConfig &config){//, const CConfi
   //std::cout << trainSet.posPatch.at(i).getFeature(32)->at<uchar>(10,10) << std::endl;
 
   //calc width and height scale
-  double widthSca, heightSca;
+
 
   //std::cout << depth.type() << " " << CV_8U << std::endl;
   //    if(depth.type() == CV_8U){
@@ -645,8 +645,8 @@ void normarizationByDepth(CPatch &patch, const CConfig &config){//, const CConfi
   //        std::cout << "depth : " << (int)depth.at<uchar>(config.p_height / 2 + 1, config.p_width / 2 + 1) << " widht scale : " << widthSca << " height scape : " << heightSca << std::endl;
 
   //    }else{
-  widthSca = config.widthScale * (double)(depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist) / (double)config.p_width;
-  heightSca = config.heightScale * (double)(depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist) / (double)config.p_height;
+  widthSca = config.p_width / config.mindist * (double)(depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist) / (double)config.p_width;
+  heightSca = config.p_height / config.mindist * (double)(depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist) / (double)config.p_height;
   //std::cout << "depth : " << depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) << " widht scale : " << widthSca << " height scape : " << heightSca << std::endl;
 
   //}
@@ -674,9 +674,11 @@ void normarizationByDepth(CPatch &patch, const CConfig &config){//, const CConfi
 
   if(roi.x < 0) roi.x = 0;
   if(roi.y < 0) roi.y = 0;
-  if(roi.x + roi.width > patch.getDepth()->cols) roi.x -= roi.width;
-  if(roi.y + roi.height > patch.getDepth()->rows) roi.y -= roi.height;
+  if(roi.x + roi.width > patch.getDepth()->cols) roi.width = patch.getDepth()->cols - roi.x;
+  if(roi.y + roi.height > patch.getDepth()->rows) roi.height = patch.getDepth()->rows - roi.x;
 
+  //std::cout << "normarized roi is ";
+  //std::cout << roi << std::endl;
   //rgb = rgb(roi);
   patch.setRoi(roi);
   //cv::resize(rgb,rgb,cv::Size(config.p_width,config.p_height));
@@ -692,6 +694,8 @@ void normarizationCenterPointP(CPosPatch &patch, const CConfig &config){//, cons
   cv::Mat tempDepth = *patch.getDepth();
   cv::Mat depth = tempDepth(patch.getRoi());
 
+
+  
   //cv::Mat showDepth = cv::Mat(tempDepth.rows, tempDepth.cols, CV_8UC1);
 
   //tempDepth.convertTo(showDepth, CV_8UC1, 255 / 1000);

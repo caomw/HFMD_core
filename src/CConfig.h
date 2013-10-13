@@ -23,7 +23,7 @@ public:
     };
     ~CConfig(){};
 
-    double widthScale,heightScale;
+    //double widthScale,heightScale;
 
     int loadConfig(const char* filename);
 
@@ -40,13 +40,13 @@ public:
     // File with names of images
     std::string	imfiles;
     // Extract features
-    bool		xtrFeature;
+    //bool		xtrFeature;
     // Scales
-    std::vector<float>	scales;
+    //std::vector<float>	scales;
     // Ratio
-    std::vector<float>	ratios;
+    //std::vector<float>	ratios;
     // Output path
-    std::string	outpath;
+    //std::string	outpath;
     // scale factor for output image (default: 128)
     int		out_scale;
     // Path to training image folder 12/12/14 MasahikoToyoshi
