@@ -36,7 +36,7 @@ HoG::HoG() {
 
 
 void HoG::extractOBin(const cv::Mat* Iorient,const cv::Mat* Imagn, std::vector<cv::Mat*>& out, int off) {
-    double* desc = new double[bins];
+  //    double* desc = new double[bins];
 
     for(int k=off; k<bins+off; ++k){
         int r = out[k]->rows;
