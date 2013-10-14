@@ -14,26 +14,25 @@
 #include <omp.h>
 #endif
 
-class paramHist {
+class paramBin {
 public:
-    paramHist(){
-        //h.resize(3);
-//        for(int i = 0; i < 3; ++i)
-//            h.at(i) = new cv::Mat_<int>::zeros(1, 360);
-        roll = cv::Mat_<double>::zeros(1, 360);
-        pitch = cv::Mat_<double>::zeros(1, 360);
-        yaw = cv::Mat_<double>::zeros(1, 360);
+    paramBin(){
+      next = NULL;
     }
 
-    ~paramHist(){
+    ~paramBin(){}
 
+    //paramBin& operator+(const paramBin&);
+    //paramBin& operator+=(const paramBin&);
+
+    paramHist* next;
+    void setParam(double r,double p, double y){
+      roll = r; 
+      pitch = p; 
+      yaw = y;
     }
-
-    paramHist& operator+(const paramHist&);
-    paramHist& operator+=(const paramHist&);
-
-    cv::Mat_<double> roll, pitch, yaw;
-    void showHist();
+    
+    double roll, pitch, yaw;
 };
 
 static HoG hog;
