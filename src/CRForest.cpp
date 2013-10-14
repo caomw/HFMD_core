@@ -1,6 +1,5 @@
 #include <boost/timer.hpp>
 #include "CRForest.h"
-#include <memory>
 
 // paramBin& paramBin::operator +(const paramBin& obj){ 
 //   this->roll += obj.roll;
@@ -169,6 +168,8 @@
  // input  : image and dataset
  // output : classification result and detect picture
  CDetectionResult CRForest::detection(CTestDataset &testSet) const{
+   std::cout << "detection started" << std::endl;
+
    int classNum = classDatabase.vNode.size(); //contain class number
    std::vector<CTestPatch> testPatch;
    std::vector<const LeafNode*> result;
@@ -177,7 +178,7 @@
 
    cv::vector<cv::Mat> voteImage(classNum);
    std::vector<int> classVoteNum(classNum,0);
-   std::vector<paramBin***> paramVote(classNum);
+   std::vector<boost::shared_ptr<paramBin>**> paramVote(classNum);
 
    // image row and col
    int imgRow = testSet.img.at(0)->rows;
@@ -186,25 +187,24 @@
    for(int i = 0; i < classNum; ++i){
      outputImage[i] = testSet.img[0]->clone();
      voteImage[i] = cv::Mat::zeros(imgRow,imgCol,CV_32FC1);
-     paramVote[i] = new paramBin*[imgRow];
-     for(int j = 0; j < (int)((double)imgRow / (double)conf.stride + 0.5); ++j)
-       paramVote[i][j] = new paramBin[(int)((double)imgCol/ (double)conf.stride + 0.5) + 1];
+     paramVote[i] = new boost::shared_ptr<paramBin>*[imgRow];
+     for(int j = 0; j < imgRow; ++j)
+       paramVote[i][j] = new boost::shared_ptr<paramBin>[imgCol];
    }
 
 
    testSet.extractFeatures(conf);
-
+   
    //std::cout << testSet.getRgbImagePath() << std::endl;
 
    std::cout << "feature extracted" << std::endl;
 
    cv::Mat votedVectors = cv::Mat::zeros(imgRow, imgCol, CV_8UC3);
 
-   std::cout << "vote image col " << (int)((double)imgCol / (double)conf.stride + 0.5) +1 << std::endl;
-   std::cout << "vote image row " << (int)((double)imgRow / (double)conf.stride + 0.5) +1 << std::endl;
+   //std::cout << "vote image col " << (int)((double)imgCol / (double)conf.stride + 0.5) +1 << std::endl;
+   //std::cout << "vote image row " << (int)((double)imgRow / (double)conf.stride + 0.5) +1 << std::endl;
 
 
-   std::cout << "kokomade kimashita" << std::endl;
 
    extractTestPatches(&testSet,testPatch,this->conf);
 
@@ -257,9 +257,9 @@
 
 		 if((int)((double)pos.y / (double)conf.stride) < (int)((double)imgRow / (double)conf.stride + 0.5) && (int)((double)pos.x / (double)conf.stride) < (int)((double)imgCol / (double)conf.stride + 0.5)){
 
-		   paramVote.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].roll.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[0]) += v * 1000;
-		   paramVote.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].pitch.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[1]) += v * 1000;
-		   paramVote.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].yaw.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[2]) += v * 1000;
+		   //paramVote.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].roll.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[0]) += v * 1000;
+		   //paramVote.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].pitch.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[1]) += v * 1000;
+		   //paramVote.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].yaw.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[2]) += v * 1000;
 		 }
 
 		 cv::Scalar hanabi;
@@ -331,29 +331,29 @@
     double min_pose_value[3], max_pose_value[3];
     cv::Point min_pose[3], max_pose[3];
 
-    paramBin hist;
+    //paramBin hist;
 
-    for(int x = 0; x < conf.paramRadius - 1; ++x){
-      for(int y = 0; y < conf.paramRadius - 1; ++y){
-	if(maxLoc.x + x >= 0 && maxLoc.y + y >= 0 && maxLoc.x + x < imgCol - conf.stride &&  maxLoc.y + y < imgRow - conf.stride){
+    // for(int x = 0; x < conf.paramRadius - 1; ++x){
+    //   for(int y = 0; y < conf.paramRadius - 1; ++y){
+    // 	if(maxLoc.x + x >= 0 && maxLoc.y + y >= 0 && maxLoc.x + x < imgCol - conf.stride &&  maxLoc.y + y < imgRow - conf.stride){
 	  
-	  hist += paramVote.at(c)[(int)((double)(maxLoc.y + y) / (double)conf.stride)][(int)((double)(maxLoc.x + x) / (double)conf.stride)];
+    // 	  hist += paramVote.at(c)[(int)((double)(maxLoc.y + y) / (double)conf.stride)][(int)((double)(maxLoc.x + x) / (double)conf.stride)];
 
 
-	}
+    // 	}
 
-	if(maxLoc.x - x >= 0 && maxLoc.y - y >= 0 && maxLoc.x - x < imgCol - conf.stride &&  maxLoc.y - y < imgRow - conf.stride){
+    // 	if(maxLoc.x - x >= 0 && maxLoc.y - y >= 0 && maxLoc.x - x < imgCol - conf.stride &&  maxLoc.y - y < imgRow - conf.stride){
 	  
-	  hist += paramVote.at(c)[(int)((double)(maxLoc.y - y) / (double)conf.stride)][(int)((double)(maxLoc.x - x) / (double)conf.stride)];
+    // 	  hist += paramVote.at(c)[(int)((double)(maxLoc.y - y) / (double)conf.stride)][(int)((double)(maxLoc.x - x) / (double)conf.stride)];
 	
 
-	}
-      }
-    }
+    // 	}
+    //   }
+    // }
 
-    cv::minMaxLoc(hist.roll, &min_pose_value[0], &max_pose_value[0], &min_pose[0], &max_pose[0]);
-    cv::minMaxLoc(hist.pitch, &min_pose_value[1], &max_pose_value[1], &min_pose[1], &max_pose[1]);
-    cv::minMaxLoc(hist.yaw, &min_pose_value[2], &max_pose_value[2], &min_pose[2], &max_pose[2]);
+    //cv::minMaxLoc(hist.roll, &min_pose_value[0], &max_pose_value[0], &min_pose[0], &max_pose[0]);
+    //cv::minMaxLoc(hist.pitch, &min_pose_value[1], &max_pose_value[1], &min_pose[1], &max_pose[1]);
+    //cv::minMaxLoc(hist.yaw, &min_pose_value[2], &max_pose_value[2], &min_pose[2], &max_pose[2]);
 
     // draw detected class bounding box to result image
     // if you whant add condition of detection threshold, add here
@@ -435,7 +435,7 @@
     // }
 
   for(int k = 0; k < classNum; ++k){
-    for(int i = 0; i < (int)((double)imgRow / (double)conf.stride + 0.5); ++i){
+    for(int i = 0; i < imgRow; ++i){
       delete[] paramVote[k][i];
     }
   }

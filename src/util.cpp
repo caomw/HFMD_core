@@ -544,7 +544,7 @@ void CClassDatabase::add(std::string str, cv::Size size, uchar depth){
       return;
     }
   }
-  std::cout << str << " " << size << " " << depth << std::endl;
+  //std::cout << str << " " << size << " " << depth << std::endl;
   vNode.push_back(databaseNode(str,size,depth));
   return;
 }

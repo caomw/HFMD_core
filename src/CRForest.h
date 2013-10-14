@@ -6,6 +6,8 @@
 #include "util.h"
 #include "HoG.h"
 #include "CDataset.h"
+//#include <memory>
+#include <boost/shared_ptr.hpp>
 
 #include "CDetectionResult.h"
 //#include <boost/timer/timer.hpp>
@@ -15,86 +17,96 @@
 #endif
 
 class paramBin {
-public:
-    paramBin(){
-      next = NULL;
-    }
+ public:
+  //paramBin(){
+  //    this->next = NULL;
+  //}
+  paramBin(double r, double p, double y){
+    setParam(r, p, y);
+  }
 
-    ~paramBin(){}
+  ~paramBin(){}
 
-    //paramBin& operator+(const paramBin&);
-    //paramBin& operator+=(const paramBin&);
+  //paramBin& operator+(const paramBin&);
+  //paramBin& operator+=(const paramBin&);
 
-    paramHist* next;
-    void setParam(double r,double p, double y){
-      roll = r; 
-      pitch = p; 
-      yaw = y;
-    }
+  boost::shared_ptr<paramBin> next;
+  void setParam(double r,double p, double y){
+    roll = r; 
+    pitch = p; 
+    yaw = y;
+  }
+
+  void addChild(double r, double p, double y){
+    if(!next)
+      next = boost::shared_ptr<paramBin>(new paramBin(r, p, y));
+    else
+      next->addChild(r, p, y);
+  }
     
-    double roll, pitch, yaw;
+  double roll, pitch, yaw;
 };
 
 static HoG hog;
 
 class CRForest {
-public:
-    CRForest(CConfig config){
-        conf = config;
-        vTrees.resize(conf.ntrees);
+ public:
+  CRForest(CConfig config){
+    conf = config;
+    vTrees.resize(conf.ntrees);
+  }
+  ~CRForest() {
+    int numberOfTrees = vTrees.size();
+    for(int i = 0;i < numberOfTrees;++i){
+      if(vTrees.at(i) != NULL)
+	delete vTrees.at(i);
     }
-    ~CRForest() {
-        int numberOfTrees = vTrees.size();
-        for(int i = 0;i < numberOfTrees;++i){
-            if(vTrees.at(i) != NULL)
-                delete vTrees.at(i);
-        }
-    }
+  }
 
-    void learning();
+  void learning();
 
-    void growATree(const int treeNum);
+  void growATree(const int treeNum);
 
-    CDetectionResult detection(CTestDataset &testSet) const;//, std::vector<double> &detectionResult, int &detectClass) const;
+  CDetectionResult detection(CTestDataset &testSet) const;//, std::vector<double> &detectionResult, int &detectClass) const;
 
-    void extractPatches(std::vector<std::vector<CPatch> > &patches,
-                        const std::vector<CDataset> dataSet,
-                        const cv::vector<cv::vector<cv::Mat*> > &image,
-                        /*boost::mt19937 gen, */CConfig conf);
+  void extractPatches(std::vector<std::vector<CPatch> > &patches,
+		      const std::vector<CDataset> dataSet,
+		      const cv::vector<cv::vector<cv::Mat*> > &image,
+		      /*boost::mt19937 gen, */CConfig conf);
 
-    void extractPatches(std::vector<std::vector<CPatch> > &patches,
-                        const std::vector<CDataset> dataSet,
-                        const cv::vector<cv::vector<cv::Mat*> > &image,
-                        const cv::vector<cv::vector<cv::Mat*> > &negImage,
-                        CConfig conf,
-                        const int treeNum);
+  void extractPatches(std::vector<std::vector<CPatch> > &patches,
+		      const std::vector<CDataset> dataSet,
+		      const cv::vector<cv::vector<cv::Mat*> > &image,
+		      const cv::vector<cv::vector<cv::Mat*> > &negImage,
+		      CConfig conf,
+		      const int treeNum);
 
-    void loadForest();
+  void loadForest();
 
-    // Regression
-    void regression(std::vector<const LeafNode*>& result,
-                    CTestPatch &patch) const;
+  // Regression
+  void regression(std::vector<const LeafNode*>& result,
+		  CTestPatch &patch) const;
 
 
 
-    //  void loadImages(cv::vector<cv::vector<cv::Mat*> > &img,
-    //		  std::vector<CDataset> &dataSet);
+  //  void loadImages(cv::vector<cv::vector<cv::Mat*> > &img,
+  //		  std::vector<CDataset> &dataSet);
 
-    //  void extractFeatureChannels(const cv::Mat* img,
-    //			      cv::vector<cv::Mat*>& vImg) const;
-    //  void minFilter(cv::Mat* src, cv::Mat* des, int fWind) const;
-    //  void maxFilter(cv::Mat* src, cv::Mat* des, int fWind) const;
+  //  void extractFeatureChannels(const cv::Mat* img,
+  //			      cv::vector<cv::Mat*>& vImg) const;
+  //  void minFilter(cv::Mat* src, cv::Mat* des, int fWind) const;
+  //  void maxFilter(cv::Mat* src, cv::Mat* des, int fWind) const;
 
-    //void voteResult(int classNumber, )
+  //void voteResult(int classNumber, )
     
-    CClassDatabase classDatabase;
-    double matrix[16];
-    double matrixI[16];
+  CClassDatabase classDatabase;
+  double matrix[16];
+  double matrixI[16];
 
-private:
-    CConfig		conf;
-    std::vector<CRTree*>	vTrees;
-    //CGlObjLoader *obj;
+ private:
+  CConfig		conf;
+  std::vector<CRTree*>	vTrees;
+  //CGlObjLoader *obj;
 };
 
 //inline void CRForest::extractFeatureChannels(const cv::Mat* img, cv::vector<cv::Mat*>& vImg) const{

@@ -109,7 +109,7 @@ void detect(const CRForest &forest, CConfig conf){
         dataSet.at(i).loadImage(conf);
         detectR = forest.detection(dataSet.at(i));
 
-        
+	dataSet
 
         for(int j = 0; j < dataSet.at(i).param.size(); ++j)
             for(int k = 0; k < detectR.detectedClass.size(); ++k)
