@@ -17,6 +17,14 @@
 //   return *this;
 // }
 
+cv::Mat calcGaussian(double score, double center){
+  cv::Mat vote = cv::Mat::zeros(1, 640, CV_32FC1);
+  for(int i = -30; i <= 30; ++i)
+    vote.at<float>(0, center + i + 180.0) += score * exp( -1 * ( i - ( center + 180.0)) / 2.0 );
+  
+  return vote;
+}
+
  double euclideanDist(cv::Point p, cv::Point q)
  {
    cv::Point diff = p - q;
@@ -254,13 +262,24 @@
 
 
 		 voteImage.at(cl).at<float>(pos.y,pos.x) += v * 1000;//(result.at(m)->pfg.at(c) - 0.9);// * 100;//weight * 500;
+		 
+		 double ta[3] = {result.at(m)->param.at(l).at(n).getAngle()[0],
+				 result.at(m)->param.at(l).at(n).getAngle()[1],
+				 result.at(m)->param.at(l).at(n).getAngle()[2]};
 
-		 if((int)((double)pos.y / (double)conf.stride) < (int)((double)imgRow / (double)conf.stride + 0.5) && (int)((double)pos.x / (double)conf.stride) < (int)((double)imgCol / (double)conf.stride + 0.5)){
+		 if(paramVote[cl][pos.y][pos.x])
+		   paramVote[cl][pos.y][pos.x]->addChild(v, ta[0], ta[1], ta[2]);
+		 else
+		   paramVote[cl][pos.y][pos.x] 
+		     = boost::shared_ptr<paramBin>
+		     (new paramBin(v , ta[0], ta[1], ta[2]));
+
+		 //if((int)((double)pos.y / (double)conf.stride) < (int)((double)imgRow / (double)conf.stride + 0.5) && (int)((double)pos.x / (double)conf.stride) < (int)((double)imgCol / (double)conf.stride + 0.5)){
 
 		   //paramVote.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].roll.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[0]) += v * 1000;
 		   //paramVote.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].pitch.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[1]) += v * 1000;
 		   //paramVote.at(cl)[(int)((double)pos.y / (double)conf.stride)][(int)((double)pos.x / (double)conf.stride)].yaw.at<double>(0,result.at(m)->param.at(l).at(n).getAngle()[2]) += v * 1000;
-		 }
+		 //}
 
 		 cv::Scalar hanabi;
 
@@ -331,7 +350,25 @@
     double min_pose_value[3], max_pose_value[3];
     cv::Point min_pose[3], max_pose[3];
 
+    cv::Mat voteAngle = cv::Mat::zeros(3, 640, CV_32FC1);
+    //for(int i = 0; i < 3; ++i)
+    //voteAngle[i] = cv::Mat::zeros(1, 640);
+
     //paramBin hist;
+
+    for(int x = 0; x < 5; ++x){
+      for(int y = 0; y < 5; ++y){
+	if(maxLoc.x + x < imgCol && maxLoc.y + y < imgRow){
+	  boost::shared_ptr<paramBin> pBin = paramVote[c][maxLoc.y + y][maxLoc.x +x];
+	  while(pBin){
+	    voteAngle.row(0) += calcGaussian(pBin->confidence, pBin->roll);//at<>[0][pBin->roll] 
+	    voteAngle.row(1) += calcGaussian(pBin->confidence, pBin->pitch);//at<>[0][pBin->roll] 
+	    voteAngle.row(2) += calcGaussian(pBin->confidence, pBin->yaw);//at<>[0][pBin->roll] 
+	    pBin = pBin->next;
+	  }
+	}
+      }
+    }
 
     // for(int x = 0; x < conf.paramRadius - 1; ++x){
     //   for(int y = 0; y < conf.paramRadius - 1; ++y){

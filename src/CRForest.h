@@ -16,13 +16,16 @@
 #include <omp.h>
 #endif
 
+cv::Mat calcGaussian(double score, double center);
+
 class paramBin {
  public:
   //paramBin(){
   //    this->next = NULL;
   //}
-  paramBin(double r, double p, double y){
+  paramBin(double conf, double r, double p, double y){
     setParam(r, p, y);
+    confidence = conf;
   }
 
   ~paramBin(){}
@@ -37,14 +40,15 @@ class paramBin {
     yaw = y;
   }
 
-  void addChild(double r, double p, double y){
+  void addChild(double conf, double r, double p, double y){
     if(!next)
-      next = boost::shared_ptr<paramBin>(new paramBin(r, p, y));
+      next = boost::shared_ptr<paramBin>(new paramBin(conf, r, p, y));
     else
-      next->addChild(r, p, y);
+      next->addChild(conf, r, p, y);
   }
     
   double roll, pitch, yaw;
+  double confidence;
 };
 
 static HoG hog;
