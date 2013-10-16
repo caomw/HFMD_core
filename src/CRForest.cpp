@@ -18,10 +18,15 @@
 // }
 
 cv::Mat calcGaussian(double score, double center){
-  cv::Mat vote = cv::Mat::zeros(1, 640, CV_32FC1);
-  for(int i = -30; i <= 30; ++i)
-    vote.at<float>(0, center + i + 180.0) += score * exp( -1 * ( i - ( center + 180.0)) / 2.0 );
-  
+  cv::Mat vote = cv::Mat::zeros(1, 720, CV_32FC1);
+  for(int i = -30; i <= 30; ++i){
+    vote.at<float>(0, center + i + 180.0) += score * exp( -1 * abs( i * i ) / 2.0 );
+    
+    //    std::cout << i << " " << exp( -1 * abs( i * i ) / 2.0 ) << std::endl;
+  }
+  //  std::cout << std::endl;
+  //int o;
+  //std::cin >> o;
   return vote;
 }
 
@@ -350,7 +355,7 @@ cv::Mat calcGaussian(double score, double center){
     double min_pose_value[3], max_pose_value[3];
     cv::Point min_pose[3], max_pose[3];
 
-    cv::Mat voteAngle = cv::Mat::zeros(3, 640, CV_32FC1);
+    cv::Mat voteAngle = cv::Mat::zeros(3, 720, CV_32FC1);
     //for(int i = 0; i < 3; ++i)
     //voteAngle[i] = cv::Mat::zeros(1, 640);
 
@@ -370,6 +375,12 @@ cv::Mat calcGaussian(double score, double center){
       }
     }
 
+    for(int i = 0; i < 180; ++i){
+      
+    }
+
+    //std::cout << voteAngle << std::endl;
+
     // for(int x = 0; x < conf.paramRadius - 1; ++x){
     //   for(int y = 0; y < conf.paramRadius - 1; ++y){
     // 	if(maxLoc.x + x >= 0 && maxLoc.y + y >= 0 && maxLoc.x + x < imgCol - conf.stride &&  maxLoc.y + y < imgRow - conf.stride){
@@ -388,9 +399,9 @@ cv::Mat calcGaussian(double score, double center){
     //   }
     // }
 
-    //cv::minMaxLoc(hist.roll, &min_pose_value[0], &max_pose_value[0], &min_pose[0], &max_pose[0]);
-    //cv::minMaxLoc(hist.pitch, &min_pose_value[1], &max_pose_value[1], &min_pose[1], &max_pose[1]);
-    //cv::minMaxLoc(hist.yaw, &min_pose_value[2], &max_pose_value[2], &min_pose[2], &max_pose[2]);
+    cv::minMaxLoc(voteAngle.row(0), &min_pose_value[0], &max_pose_value[0], &min_pose[0], &max_pose[0]);
+    cv::minMaxLoc(voteAngle.row(1), &min_pose_value[1], &max_pose_value[1], &min_pose[1], &max_pose[1]);
+    cv::minMaxLoc(voteAngle.row(2), &min_pose_value[2], &max_pose_value[2], &min_pose[2], &max_pose[2]);
 
     // draw detected class bounding box to result image
     // if you whant add condition of detection threshold, add here
@@ -423,9 +434,9 @@ cv::Mat calcGaussian(double score, double center){
       "\tvote : " << classVoteNum.at(c) <<
       " Score : " << voteImage.at(c).at<float>(maxLoc.y, maxLoc.x) <<
       " CenterPoint : " << maxLoc << std::endl <<
-      " Pose : roll " << max_pose[0].x <<
-      " pitch : " << max_pose[1].x <<
-      " yaw : " << max_pose[2].x << std::endl;
+      " Pose : roll " << max_pose[0].x - 180 <<
+      " pitch : " << max_pose[1].x - 180 <<
+      " yaw : " << max_pose[2].x - 180 << std::endl;
 
     // if not in demo mode, output image to file
     if(!conf.demoMode){
