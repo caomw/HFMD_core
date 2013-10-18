@@ -203,7 +203,7 @@ inline void CRTree::generateTest(int* test, unsigned int max_w, unsigned int max
                 test[6] = 0;
                 test[7] = 0;
             }else if(config.rgbFeature != 1){
-                int rgb = rand() % 3;
+                int rgb = rand() % 4;
 
                 test[8] = rgb;
                 // caliculate haar-like features
