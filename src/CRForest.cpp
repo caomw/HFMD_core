@@ -1,234 +1,236 @@
-#include <boost/timer.hpp>
-#include "CRForest.h"
+ #include <boost/timer.hpp>
+ #include "CRForest.h"
 
-// paramBin& paramBin::operator +(const paramBin& obj){ 
-//   this->roll += obj.roll;
-//   this->pitch += obj.pitch;
-//   this->yaw += obj.yaw;
+ // paramBin& paramBin::operator +(const paramBin& obj){ 
+ //   this->roll += obj.roll;
+ //   this->pitch += obj.pitch;
+ //   this->yaw += obj.yaw;
 
-//   return *this;
-// }
+ //   return *this;
+ // }
 
-// paramBin& paramBin::operator +=(const paramBin& obj){
-//   this->roll += obj.roll;
-//   this->pitch += obj.pitch;
-//   this->yaw += obj.yaw;
+ // paramBin& paramBin::operator +=(const paramBin& obj){
+ //   this->roll += obj.roll;
+ //   this->pitch += obj.pitch;
+ //   this->yaw += obj.yaw;
 
-//   return *this;
-// }
+ //   return *this;
+ // }
 
-cv::Mat calcGaussian(double score, double center){
-  cv::Mat vote = cv::Mat::zeros(1, 720, CV_32FC1);
-  for(int i = -30; i <= 30; ++i){
-    vote.at<float>(0, center + i + 180.0) += score * exp( -1 * abs( i * i ) / 2.0 );
-    
-    //    std::cout << i << " " << exp( -1 * abs( i * i ) / 2.0 ) << std::endl;
+ cv::Mat calcGaussian(double score, double center){
+   cv::Mat vote = cv::Mat::zeros(1, 720, CV_32FC1);
+   for(int i = -30; i <= 30; ++i){
+     vote.at<float>(0, center + i + 180.0) += score * exp( -1 * abs( i * i ) / 2.0 );
+
+     //    std::cout << i << " " << exp( -1 * abs( i * i ) / 2.0 ) << std::endl;
+   }
+   //  std::cout << std::endl;
+   //int o;
+   //std::cin >> o;
+   return vote;
+ }
+
+  double euclideanDist(cv::Point p, cv::Point q)
+  {
+    cv::Point diff = p - q;
+    return cv::sqrt(diff.x*diff.x + diff.y*diff.y);
   }
-  //  std::cout << std::endl;
-  //int o;
-  //std::cin >> o;
-  return vote;
-}
 
- double euclideanDist(cv::Point p, cv::Point q)
- {
-   cv::Point diff = p - q;
-   return cv::sqrt(diff.x*diff.x + diff.y*diff.y);
- }
+  void CRForest::learning(){
 
- void CRForest::learning(){
+  #pragma omp parallel
+    {
+  #pragma omp for
+      for(int i = 0;i < conf.ntrees; ++i){
+	growATree(i);
+      } // end tree loop
+    }
+  }
 
- #pragma omp parallel
-   {
- #pragma omp for
-     for(int i = 0;i < conf.ntrees; ++i){
-       growATree(i);
-     } // end tree loop
-   }
- }
+  void CRForest::growATree(const int treeNum){
+    // positive, negative dataset
+    std::vector<CPosDataset*> posSet(0);
+    std::vector<CNegDataset*> negSet(0);
 
- void CRForest::growATree(const int treeNum){
-   // positive, negative dataset
-   std::vector<CPosDataset*> posSet(0);
-   std::vector<CNegDataset*> negSet(0);
+    // positive, negative patch
+    std::vector<CPosPatch> posPatch(0);
+    std::vector<CNegPatch> negPatch(0);
 
-   // positive, negative patch
-   std::vector<CPosPatch> posPatch(0);
-   std::vector<CNegPatch> negPatch(0);
+    char buffer[256];
 
-   char buffer[256];
+    std::cout << "tree number " << treeNum << std::endl;
 
-   std::cout << "tree number " << treeNum << std::endl;
-
-   // initialize random seed
-   boost::mt19937    gen( treeNum * static_cast<unsigned long>(time(NULL)) );
-   //boost::timer t;
+    // initialize random seed
+    boost::mt19937    gen( treeNum * static_cast<unsigned long>(time(NULL)) );
+    //boost::timer t;
 
 
-   //loadTrainPosFile(conf, posSet);//, gen);
-   //  if(conf.modelLearningMode)
-   //  loadTrainObjFile(conf,posSet);
-   //else
-   loadTrainPosFile(conf, posSet);
+    //loadTrainPosFile(conf, posSet);//, gen);
+    //  if(conf.modelLearningMode)
+    //  loadTrainObjFile(conf,posSet);
+    //else
+    loadTrainPosFile(conf, posSet);
 
-   CClassDatabase tempClassDatabase;
-   // extract pos features and register classDatabase
-   for(unsigned int i = 0; i < posSet.size(); ++i){
-     tempClassDatabase.add(posSet[i]->getParam()->getClassName(),cv::Size(),0);
-   }
-
-
-   loadTrainNegFile(conf, negSet);
-
-   std::cout << "dataset loaded" << std::endl;
-
-   std::cout << "generating appearance from 3D model!" << std::endl;
-   // extract pos features and register classDatabase
-   for(unsigned int i = 0; i < posSet.size(); ++i){
-     posSet.at(i)->loadImage(conf);
-     posSet.at(i)->extractFeatures(conf);
-     classDatabase.add(posSet.at(i)->getParam()->getClassName(),posSet.at(i)->img.at(0)->size(),0);
-     pBar(i,posSet.size(),50);
-   }
-   std::cout << std::endl;
-   classDatabase.show();
-
-   // extract neg features
-   for(unsigned int i = 0; i < negSet.size(); ++i){
-     negSet.at(i)->loadImage(conf);
-     negSet.at(i)->extractFeatures(conf);
-   }
-
-   std::vector<CPosDataset*> tempPosSet(0);
-   int currentClass = treeNum % tempClassDatabase.vNode.size();
-
-   for(unsigned int i = 0; i < posSet.size(); ++i){
-     if(tempClassDatabase.search(posSet.at(i)->getClassName()) == currentClass){
-       tempPosSet.push_back(posSet.at(i));
-     }else{
-       negSet.push_back((CNegDataset*)posSet[i]);
-     }
-   }
-
-   posSet = tempPosSet;
-
-   CRTree *tree = new CRTree(conf.min_sample, conf.max_depth, classDatabase.vNode.size(),this->classDatabase);
-   std::cout << "tree created" << std::endl;
-
-   extractPosPatches(posSet,posPatch,conf,treeNum,this->classDatabase);
-   extractNegPatches(negSet,negPatch,conf);
-
-   std::cout << "extracted pathes" << std::endl;
-   std::vector<int> patchClassNum(classDatabase.vNode.size(), 0);
-
-   for(unsigned int j = 0; j < posPatch.size(); ++j)
-     patchClassNum.at(classDatabase.search(posPatch.at(j).getClassName()))++;
-
-   tree->growTree(posPatch,negPatch, 0,0, ((float)posPatch.size() / (float)(posPatch.size() + negPatch.size())), conf, patchClassNum);
-
-   // save tree
-   sprintf(buffer, "%s%03d.txt",
-	   conf.treepath.c_str(), treeNum + conf.off_tree);
-   std::cout << "tree file name is " << buffer << std::endl;
-   tree->saveTree(buffer);
-
-   // save class database
-   sprintf(buffer, "%s%s%03d.txt",
-	   conf.treepath.c_str(),
-	   conf.classDatabaseName.c_str(), treeNum + conf.off_tree);
-   std::cout << "write tree data" << std::endl;
-   classDatabase.write(buffer);
-
-   sprintf(buffer, "%s%03d_timeResult.txt",conf.treepath.c_str(), treeNum + conf.off_tree);
-   std::fstream lerningResult(buffer, std::ios::out);
-   if(lerningResult.fail()){
-     std::cout << "can't write result" << std::endl;
-   }
-
-   lerningResult.close();
-
-   delete tree;
-
-   posPatch.clear();
-   negPatch.clear();
-
-   for(unsigned int i = 0; i < posSet.size(); ++i)
-     delete posSet[i];
-   for(unsigned int i = 0; i < negSet.size(); ++i)
-     delete negSet[i];
-
-   posSet.clear();
-   std::cout << negSet.size() << std::endl;
-   negSet.clear();
- }
-
- void CRForest::loadForest(){
-   char buffer[256];
-   char buffer2[256];
-   std::cout << "loading forest..." << std::endl;
-   for(unsigned int i = 0; i < vTrees.size(); ++i){
-     sprintf(buffer, "%s%03d.txt",conf.treepath.c_str(),i);
-     sprintf(buffer2, "%s%s%03d.txt", conf.treepath.c_str(), conf.classDatabaseName.c_str(), i);
-     vTrees[i] = new CRTree(buffer, buffer2, conf);
-
-     classDatabase.read(buffer2);
-     pBar(i,vTrees.size(),50);
-   }
-   std::cout << std::endl;
- }
-
- // name   : detect function
- // input  : image and dataset
- // output : classification result and detect picture
- CDetectionResult CRForest::detection(CTestDataset &testSet) const{
-   std::cout << "detection started" << std::endl;
-
-   int classNum = classDatabase.vNode.size(); //contain class number
-   std::vector<CTestPatch> testPatch;
-   std::vector<const LeafNode*> result;
-
-   cv::vector<cv::Mat> outputImage(classNum);
-
-   cv::vector<cv::Mat> voteImage(classNum);
-   std::vector<int> classVoteNum(classNum,0);
-   std::vector<boost::shared_ptr<paramBin>**> paramVote(classNum);
-
-   // image row and col
-   int imgRow = testSet.img.at(0)->rows;
-   int imgCol = testSet.img.at(0)->cols;
-
-   for(int i = 0; i < classNum; ++i){
-     outputImage[i] = testSet.img[0]->clone();
-     voteImage[i] = cv::Mat::zeros(imgRow,imgCol,CV_32FC1);
-     paramVote[i] = new boost::shared_ptr<paramBin>*[imgRow];
-     for(int j = 0; j < imgRow; ++j)
-       paramVote[i][j] = new boost::shared_ptr<paramBin>[imgCol];
-   }
+    CClassDatabase tempClassDatabase;
+    // extract pos features and register classDatabase
+    for(unsigned int i = 0; i < posSet.size(); ++i){
+      tempClassDatabase.add(posSet[i]->getParam()->getClassName(),cv::Size(),0);
+    }
 
 
-   testSet.extractFeatures(conf);
-   
-   //std::cout << testSet.getRgbImagePath() << std::endl;
+    loadTrainNegFile(conf, negSet);
 
-   std::cout << "feature extracted" << std::endl;
+    std::cout << "dataset loaded" << std::endl;
 
-   cv::Mat votedVectors = cv::Mat::zeros(imgRow, imgCol, CV_8UC3);
+    std::cout << "generating appearance from 3D model!" << std::endl;
+    // extract pos features and register classDatabase
+    for(unsigned int i = 0; i < posSet.size(); ++i){
+      posSet.at(i)->loadImage(conf);
+      posSet.at(i)->extractFeatures(conf);
+      classDatabase.add(posSet.at(i)->getParam()->getClassName(),posSet.at(i)->img.at(0)->size(),0);
+      pBar(i,posSet.size(),50);
+    }
+    std::cout << std::endl;
+    classDatabase.show();
 
-   //std::cout << "vote image col " << (int)((double)imgCol / (double)conf.stride + 0.5) +1 << std::endl;
-   //std::cout << "vote image row " << (int)((double)imgRow / (double)conf.stride + 0.5) +1 << std::endl;
+    // extract neg features
+    for(unsigned int i = 0; i < negSet.size(); ++i){
+      negSet.at(i)->loadImage(conf);
+      negSet.at(i)->extractFeatures(conf);
+    }
+
+    std::vector<CPosDataset*> tempPosSet(0);
+    int currentClass = treeNum % tempClassDatabase.vNode.size();
+
+    for(unsigned int i = 0; i < posSet.size(); ++i){
+      if(tempClassDatabase.search(posSet.at(i)->getClassName()) == currentClass){
+	tempPosSet.push_back(posSet.at(i));
+      }else{
+	negSet.push_back((CNegDataset*)posSet[i]);
+      }
+    }
+
+    posSet = tempPosSet;
+
+    CRTree *tree = new CRTree(conf.min_sample, conf.max_depth, classDatabase.vNode.size(),this->classDatabase);
+    std::cout << "tree created" << std::endl;
+
+    extractPosPatches(posSet,posPatch,conf,treeNum,this->classDatabase);
+    extractNegPatches(negSet,negPatch,conf);
+
+    std::cout << "extracted pathes" << std::endl;
+    std::vector<int> patchClassNum(classDatabase.vNode.size(), 0);
+
+    for(unsigned int j = 0; j < posPatch.size(); ++j)
+      patchClassNum.at(classDatabase.search(posPatch.at(j).getClassName()))++;
+
+    tree->growTree(posPatch,negPatch, 0,0, ((float)posPatch.size() / (float)(posPatch.size() + negPatch.size())), conf, patchClassNum);
+
+    // save tree
+    sprintf(buffer, "%s%03d.txt",
+	    conf.treepath.c_str(), treeNum + conf.off_tree);
+    std::cout << "tree file name is " << buffer << std::endl;
+    tree->saveTree(buffer);
+
+    // save class database
+    sprintf(buffer, "%s%s%03d.txt",
+	    conf.treepath.c_str(),
+	    conf.classDatabaseName.c_str(), treeNum + conf.off_tree);
+    std::cout << "write tree data" << std::endl;
+    classDatabase.write(buffer);
+
+    sprintf(buffer, "%s%03d_timeResult.txt",conf.treepath.c_str(), treeNum + conf.off_tree);
+    std::fstream lerningResult(buffer, std::ios::out);
+    if(lerningResult.fail()){
+      std::cout << "can't write result" << std::endl;
+    }
+
+    lerningResult.close();
+
+    delete tree;
+
+    posPatch.clear();
+    negPatch.clear();
+
+    for(unsigned int i = 0; i < posSet.size(); ++i)
+      delete posSet[i];
+    for(unsigned int i = 0; i < negSet.size(); ++i)
+      delete negSet[i];
+
+    posSet.clear();
+    std::cout << negSet.size() << std::endl;
+    negSet.clear();
+  }
+
+  void CRForest::loadForest(){
+    char buffer[256];
+    char buffer2[256];
+    std::cout << "loading forest..." << std::endl;
+    for(unsigned int i = 0; i < vTrees.size(); ++i){
+      sprintf(buffer, "%s%03d.txt",conf.treepath.c_str(),i);
+      sprintf(buffer2, "%s%s%03d.txt", conf.treepath.c_str(), conf.classDatabaseName.c_str(), i);
+      vTrees[i] = new CRTree(buffer, buffer2, conf);
+
+      classDatabase.read(buffer2);
+      pBar(i,vTrees.size(),50);
+    }
+    std::cout << std::endl;
+  }
+
+  // name   : detect function
+  // input  : image and dataset
+  // output : classification result and detect picture
+  CDetectionResult CRForest::detection(CTestDataset &testSet) const{
+    std::cout << "detection started" << std::endl;
+
+    int classNum = classDatabase.vNode.size(); //contain class number
+    std::vector<CTestPatch> testPatch;
+    std::vector<const LeafNode*> result;
+
+    cv::vector<cv::Mat> outputImage(classNum);
+
+    cv::vector<cv::Mat> voteImage(classNum);
+    std::vector<int> classVoteNum(classNum,0);
+    std::vector<boost::shared_ptr<paramBin>**> paramVote(classNum);
+
+    // image row and col
+    int imgRow = testSet.img.at(0)->rows;
+    int imgCol = testSet.img.at(0)->cols;
+
+    for(int i = 0; i < classNum; ++i){
+      outputImage[i] = testSet.img[0]->clone();
+      voteImage[i] = cv::Mat::zeros(imgRow,imgCol,CV_32FC1);
+      paramVote[i] = new boost::shared_ptr<paramBin>*[imgRow];
+      for(int j = 0; j < imgRow; ++j)
+	paramVote[i][j] = new boost::shared_ptr<paramBin>[imgCol];
+    }
+
+
+    testSet.extractFeatures(conf);
+
+    //std::cout << testSet.getRgbImagePath() << std::endl;
+
+    std::cout << "feature extracted" << std::endl;
+
+    cv::Mat votedVectors = cv::Mat::zeros(imgRow, imgCol, CV_8UC3);
+
+    //std::cout << "vote image col " << (int)((double)imgCol / (double)conf.stride + 0.5) +1 << std::endl;
+    //std::cout << "vote image row " << (int)((double)imgRow / (double)conf.stride + 0.5) +1 << std::endl;
 
 
 
-   extractTestPatches(&testSet,testPatch,this->conf);
+    extractTestPatches(&testSet,testPatch,this->conf);
 
-   std::cout << "patch num: " << testPatch.size() << std::endl;
-   std::cout << "detecting..." << std::endl;
-   std::cout << "class num = " << classNum << std::endl;
+    std::cout << "patch num: " << testPatch.size() << std::endl;
+    std::cout << "detecting..." << std::endl;
+    std::cout << "class num = " << classNum << std::endl;
 
-   for(unsigned int j = 0; j < testPatch.size(); ++j){
-     // regression current patch
-     result.clear();
-     this->regression(result, testPatch.at(j));
+    for(unsigned int j = 0; j < testPatch.size(); ++j){
+      // regression current patch
+      result.clear();
+      this->regression(result, testPatch.at(j));
+
+      //std::cout << "regression end" << j << std::endl;
 
      // for each tree leaf
      for(unsigned int m = 0; m < result.size(); ++m){
@@ -236,7 +238,7 @@ cv::Mat calcGaussian(double score, double center){
        {
  #pragma omp for
 	 for(unsigned int l = 0; l < result.at(m)->pfg.size(); ++l){
-	   if(result.at(m)->pfg.at(l) > 0.5){
+	   if(result.at(m)->pfg.at(l) > 0.9){
 	     int cl = classDatabase.search(result.at(m)->param.at(l).at(0).getClassName());
 
 	     for(unsigned int n = 0; n < result.at(m)->param.at(cl).size(); ++n){
