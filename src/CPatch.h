@@ -33,7 +33,7 @@ private:
 class CPosPatch : public CPatch{
 public:
  CPosPatch(cv::Rect r,CPosDataset *pos) : CPatch(r, pos),pData(pos){
-        relativePosition = pData->getParam()->getCenterPoint() - cv::Point(getRoi().x + getRoi().width / 2 + 1, getRoi().y + getRoi().height / 2 + 1);
+        relativePosition = pData->getParam()->getCenterPoint() - cv::Point_<double>(getRoi().x + getRoi().width / 2 + 1, getRoi().y + getRoi().height / 2 + 1);
         //std::cout << relativePosition << std::endl;
     }
     CPosPatch(){
@@ -42,19 +42,19 @@ public:
     virtual ~CPosPatch(){}
 
     std::string getClassName()const{return pData->getParam()->getClassName();}
-    cv::Point getCenterPoint()const{return pData->getParam()->getCenterPoint();}
+    cv::Point_<double> getCenterPoint()const{return pData->getParam()->getCenterPoint();}
     int getFeatureNum()const{return pData->feature.size();}
     CParamset getParam()const{return *(pData->getParam());}
     std::string getRgbImageFilePath(){return pData->getRgbImagePath();}
-    cv::Mat* getDepth() const{return pData->img.at(1);}
-    void setCenterPoint(cv::Point nCenter){pData->setCenterPoint(nCenter);}
+    //cv::Mat* getDepth() const{return pData->img.at(1);}
+    void setCenterPoint(cv::Point_<double> nCenter){pData->setCenterPoint(nCenter);}
 
-    cv::Point getRelativePosition(){return relativePosition;}
-    void setRelativePosition(const cv::Point p){relativePosition = p;}
+    cv::Point_<double> getRelativePosition(){return relativePosition;}
+    void setRelativePosition(const cv::Point_<double> p){relativePosition = p;}
 
 private:
     CPosDataset *pData;
-    cv::Point relativePosition;
+    cv::Point_<double> relativePosition;
 };
 
 class CNegPatch : public CPatch{
@@ -62,7 +62,7 @@ public:
  CNegPatch(cv::Rect r, CNegDataset *neg ) : CPatch(r, neg), nData(neg){}
     CNegPatch(){}
     int getFeatureNum()const{return nData->feature.size();}
-    cv::Mat* getDepth() const{return nData->img.at(1);}
+    //cv::Mat* getDepth() const{return nData->img.at(1);}
     virtual ~CNegPatch(){}
 
 private:
@@ -76,7 +76,7 @@ public:
     virtual ~CTestPatch(){}
     //cv::Rect getPatchRoi(){return this->getRoi(
     int getFeatureNum()const {return tData->feature.size();}
-    cv::Mat* getDepth() const{return tData->img.at(1);}
+    //cv::Mat* getDepth() const{return tData->img.at(1);}
 
 private:
     CTestDataset *tData;

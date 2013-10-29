@@ -30,17 +30,17 @@
    return vote;
  }
 
-  double euclideanDist(cv::Point p, cv::Point q)
+double euclideanDist(cv::Point_<double> p, cv::Point_<double> q)
   {
-    cv::Point diff = p - q;
+    cv::Point_<double> diff = p - q;
     return cv::sqrt(diff.x*diff.x + diff.y*diff.y);
   }
 
   void CRForest::learning(){
 
-  #pragma omp parallel
+    #pragma omp parallel
     {
-  #pragma omp for
+    #pragma omp for
       for(int i = 0;i < conf.ntrees; ++i){
 	growATree(i);
       } // end tree loop
@@ -242,9 +242,9 @@
 	     int cl = classDatabase.search(result.at(m)->param.at(l).at(0).getClassName());
 
 	     for(unsigned int n = 0; n < result.at(m)->param.at(cl).size(); ++n){
-	       cv::Point patchSize(conf.p_height/2,conf.p_width/2);
+	       cv::Point_<double> patchSize(conf.p_height/2,conf.p_width/2);
 
-	       cv::Point rPoint = result.at(m)->param.at(cl).at(n).getCenterPoint();
+	       cv::Point_<double> rPoint = result.at(m)->param.at(cl).at(n).getCenterPoint();
 
 	       if(conf.learningMode != 2){
 		 cv::Mat tempDepth = *testPatch[j].getDepth();
@@ -252,10 +252,17 @@
 		 cv::Mat realDepth = tempDepth(tempRect);
 		 double centerDepth = realDepth.at<ushort>(tempRect.height / 2 + 1, tempRect.width / 2 + 1) + conf.mindist;
 
-		 rPoint.x *= (conf.maxdist - conf.mindist - centerDepth);
-		 rPoint.y *= (conf.maxdist - conf.mindist - centerDepth);
-		 rPoint.x /= 1000;
-		 rPoint.y /= 1000;
+
+
+		 rPoint.x *= centerDepth;
+		 rPoint.y *= centerDepth;
+		 rPoint.x /= 100;
+		 rPoint.y /= 100;
+
+		 //std::cout << rPoint << std::endl;		 
+		 // rPoint.x = 0;
+		 // rPoint.y = 0;
+
 
 	       }
 
@@ -329,6 +336,9 @@
       cv::GaussianBlur(voteImage.at(i),voteImage.at(i), cv::Size(41,41),0);
     }
   }
+
+  cv::imshow("vote", voteImage.at(0));
+  cv::waitKey(1);
 
   // output image to file
   std::string opath;

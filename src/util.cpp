@@ -263,11 +263,13 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
 
   tempRect.width  = conf.p_width;
   tempRect.height = conf.p_height;
+  
 
   std::cout << "image num is " << posSet.size() << std::endl;;
 
   std::cout << "extracting pos patch from image" << std::endl;
   for(unsigned int l = 0;l < posSet.size(); ++l){
+
     for(int j = 0; j < posSet.at(l)->img.at(0)->cols - conf.p_width; j += conf.stride){
       for(int k = 0; k < posSet.at(l)->img.at(0)->rows - conf.p_height; k += conf.stride){
 	tempRect.x = j;
@@ -290,32 +292,36 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
 	  cv::Mat tempDepth1 = *posTemp.getDepth();
 	  cv::Mat tempDepth2 = tempDepth1(tempRect);
 
-	  if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) == 0)
-	    centerDepthFlag = 1;
+	  // if()
+	  //   centerDepthFlag = 1;
+	  //std::cout << tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) << std::endl;
+	
+	
 
-	}
 
 	//	std::cout << centerDepthFlag << std::endl;
 
 	//if (conf.learningMode == 2){// || pixNum > 0){
 
-
-	if(centerDepthFlag != 1){
+	  //std::cout << tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) << std::endl;
+	if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) != 0){
 	  //	  std::cout << "test" << std::endl;
-	  if(conf.learningMode != 2){
-	    normarizationByDepth(posTemp , conf);
-	    normarizationCenterPointP(posTemp, conf);
-	  }
+	  //if(conf.learningMode != 2){
+	  normarizationByDepth(posTemp , conf, (double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
+	  normarizationCenterPointP(posTemp, conf, (double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
+	    //}
 
 	  
 	  //	  std::cout << "kokomade" << std::endl;
 	  //std::cout << posTemp.getRoi().width << std::endl;
+
+	}
+	}
 	  if(posTemp.getRoi().width > 5 && posTemp.getRoi().height > 5){
 	    
 	    tPosPatch.push_back(posTemp);
 	    patchPerClass.at(classNum).push_back(posTemp);
 	  }
-	}
 
 	//} // if
       }//x
@@ -404,7 +410,6 @@ void extractNegPatches(std::vector<CNegDataset*> &negSet,
 	//                }
 
 
-
 	//if (conf.learningMode == 2){// || pixNum > 0){
 	//if(centerDepthFlag != 1){
 
@@ -418,17 +423,20 @@ void extractNegPatches(std::vector<CNegDataset*> &negSet,
 	  cv::Mat tempDepth1 = *negTemp.getDepth();
 	  cv::Mat tempDepth2 = tempDepth1(tempRect);
 
-	  if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) == 0)
-	    centerDepthFlag = 1;
+	  //	  if( != 0)
+	  // centerDepthFlag = 1;
+
+	
+	if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) != 0){
+	  //if(conf.learningMode)
+	  normarizationByDepth(negTemp , conf,(double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
+
 
 	}
-	if(centerDepthFlag != 1){
-	  if(conf.learningMode != 2)
-	    normarizationByDepth(negTemp , conf);
+	}
 
 	  if(negTemp.getRoi().width > 5 && negTemp.getRoi().height > 5)
 	    tNegPatch.push_back(negTemp);
-	}
 	//}
       }//x
     }//y
@@ -460,6 +468,35 @@ void extractTestPatches(CTestDataset* testSet,std::vector<CTestPatch> &testPatch
 
   cv::Rect tempRect;
   //CPatch tPatch;
+
+
+
+
+  // double widthSca = (double)(testSet->img[1]->at<ushort>(240 , 320));
+  // double heightSca = (double)(testSet->img[1]->at<ushort>(240, 320));
+
+
+
+  // cv::Mat test = testSet->img[1]->clone();
+  // cv::Mat showTest;
+  // int face[] = {cv::FONT_HERSHEY_SIMPLEX, cv::FONT_HERSHEY_PLAIN, cv::FONT_HERSHEY_DUPLEX, cv::FONT_HERSHEY_COMPLEX, 
+  //               cv::FONT_HERSHEY_TRIPLEX, cv::FONT_HERSHEY_COMPLEX_SMALL, cv::FONT_HERSHEY_SCRIPT_SIMPLEX, 
+  //               cv::FONT_HERSHEY_SCRIPT_COMPLEX, cv::FONT_ITALIC};
+
+  // std::cout << widthSca << " " << heightSca << std::endl;
+
+  // if(widthSca > 0 && heightSca > 0)
+  //   cv::resize(test, test, cv::Size(), widthSca / 1000.0, heightSca / 1000.0);
+
+  // test.convertTo(showTest, CV_8UC1, 255.0 / 1000);
+
+  // std::stringstream ss;
+  // ss << widthSca;
+  // cv::putText(showTest, ss.str(), cv::Point(320,240), face[0], 1.2, cv::Scalar(0,0,200), 2, CV_AA);
+
+  // cv::imshow("test",showTest);
+  // cv::waitKey(1);
+
 
   tempRect.width = conf.p_width;
   tempRect.height = conf.p_height;
@@ -508,21 +545,26 @@ void extractTestPatches(CTestDataset* testSet,std::vector<CTestPatch> &testPatch
 	cv::Mat tempDepth1 = *testTemp.getDepth();
 	cv::Mat tempDepth2 = tempDepth1(tempRect);
 
-	if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) == 0)
+	if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) != 0)
 	  centerDepthFlag = 1;
 
-      }
+	//}
 
       //tPatch.setPosition(j,k);
-      if(centerDepthFlag != 1){
+      if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) != 0)//centerDepthFlag){
 	if(testSet->img.size() > 1)
-	  normarizationByDepth(testTemp , conf);
+	  normarizationByDepth(testTemp , conf, (double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
+
+
+      }
 	if(testTemp.getRoi().width > 5 && testTemp.getRoi().height > 5)
 	  testPatch.push_back(testTemp);
-      }
+    
       //}
     }
   }
+  
+
 }
 
 void pBar(int p,int maxNum, int width){
@@ -621,62 +663,47 @@ int CClassDatabase::search(std::string str) const{
   return -1;
 }
 
-void normarizationByDepth(CPatch &patch, const CConfig &config){//, const CConfig &config)const {
+int normarizationByDepth(CPatch &patch, const CConfig &config, double sca){//, const CConfig &config)const {
   cv::Mat tempDepth = *patch.getDepth();
   cv::Mat depth = tempDepth(patch.getRoi());
-  double widthSca, heightSca;
-  //std::cout << depth << std::endl;
 
-  //    cv::namedWindow("test");
-  //    cv::imshow("test",depth);
-  //    cv::waitKey(0);
-  //    cv::destroyAllWindows();
-
-  //std::cout << trainSet.posPatch.at(i).getFeature(32)->at<uchar>(10,10) << std::endl;
-
-  //calc width and height scale
-
-
-  //std::cout << depth.type() << " " << CV_8U << std::endl;
-  //    if(depth.type() == CV_8U){
-  //        widthSca = config.widthScale * (double)(depth.at<uchar>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist) / (double)config.p_width;
-  //        heightSca = config.heightScale * (double)(depth.at<uchar>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist) / (double)config.p_height;
-  //        //std::cout << "kotti da" << std::endl;
-  //        std::cout << "depth : " << (int)depth.at<uchar>(config.p_height / 2 + 1, config.p_width / 2 + 1) << " widht scale : " << widthSca << " height scape : " << heightSca << std::endl;
-
-  //    }else{
-  widthSca = config.p_width / config.mindist * (double)(depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist) / (double)config.p_width;
-  heightSca = config.p_height / config.mindist * (double)(depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist) / (double)config.p_height;
-  //std::cout << "depth : " << depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) << " widht scale : " << widthSca << " height scape : " << heightSca << std::endl;
-
-  //}
-
-  // new window size
-  double realWindowWidth, realWindowHeight;
-
-  realWindowWidth = (double)config.p_width / widthSca;
-  realWindowHeight = (double)config.p_height / heightSca;
-
-  //std::cout << "w " << realWindowWidth << " h " << realWindowHeight << std::endl;
+  //double sca = tempDepth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1);
 
   cv::Rect roi;
 
-  roi.x = patch.getRoi().x + (int)((config.p_width - realWindowHeight) / 2);
-  roi.y = patch.getRoi().y + (int)((config.p_height - realWindowWidth) / 2);
+  roi.width = patch.getRoi().width * config.maxdist / sca;
+  roi.height = patch .getRoi().height * config.maxdist / sca;
 
-  roi.width = (int)realWindowWidth;
-  roi.height = (int)realWindowHeight;
+  roi.x = patch.getRoi().x - roi.width / 2;
+  roi.y = patch.getRoi().y - roi.height / 2;
+  //std::cout << patch.getRoi() << std::endl;
+
+  //  cv::namedWindow
+   
+
+  //roi.width = (int)realWindowWidth;
+  //roi.height = (int)realWindowHeight;
 
   //std::cout << roi.x << " " << roi.y << " " << roi.width << " "<< roi.height << std::endl;
 
   //std::cout << depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) << std::endl;
   //std::cout << roi << std::endl;
 
+
+  //  std::cout << roi << std::endl;
+
+  //std::cout << patch.getDepth()->rows << std::endl;
+
+  //  std::cout << roi << std::endl;
   if(roi.x < 0) roi.x = 0;
   if(roi.y < 0) roi.y = 0;
   if(roi.x + roi.width > patch.getDepth()->cols) roi.width = patch.getDepth()->cols - roi.x;
-  if(roi.y + roi.height > patch.getDepth()->rows) roi.height = patch.getDepth()->rows - roi.x;
+  if(roi.y + roi.height > patch.getDepth()->rows) roi.height = patch.getDepth()->rows - roi.y;
 
+  //std::cout << sca << std::endl;
+
+  //std::cout << tempDepth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) << std::endl;
+  //std::cout << roi << std::endl;
   //std::cout << "normarized roi is ";
   //std::cout << roi << std::endl;
   //rgb = rgb(roi);
@@ -688,9 +715,11 @@ void normarizationByDepth(CPatch &patch, const CConfig &config){//, const CConfi
   //                cv::imshow("test",rgb);
   //                cv::waitKey(0);
   //                cv::destroyAllWindows();
+  //    std::cout << "kokoke-" << std::endl;
+  return 0;
 }
 
-void normarizationCenterPointP(CPosPatch &patch, const CConfig &config){//, const CConfig &config)const {
+int normarizationCenterPointP(CPosPatch &patch, const CConfig &config, double sca){//, const CConfig &config)const {
   cv::Mat tempDepth = *patch.getDepth();
   cv::Mat depth = tempDepth(patch.getRoi());
 
@@ -709,16 +738,20 @@ void normarizationCenterPointP(CPosPatch &patch, const CConfig &config){//, cons
   //std::cout << depth.type() << " " << CV_8U << std::endl;
   //std::cout << config.p_height / 2 + 1 <<  config.p_width / 2 + 1 << std::endl;
   //  std::cout << "depth rows and cols " << depth.rows << " " << depth.cols << std::endl;
-  double centerDepth = depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist;
-  cv::Point currentP = patch.getRelativePosition();
+  //double centerDepth = depth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1) + config.mindist;
+  cv::Point_<double> currentP = patch.getRelativePosition();
 
-
+  //  double sca = tempDepth.at<ushort>(config.p_height / 2 + 1, config.p_width / 2 + 1);
+  //  if(sca == 0)
+  //  exit(-1);
+  //std::cout << "current p before " << currentP << std::endl;
+  //std::cout << sca << std::endl;
 
   //    currentP.x = currentP.x * 10;
-  currentP.y *= 1000;
-  currentP.x *= 1000;
-  currentP.x /= (config.maxdist - config.mindist - centerDepth);
-  currentP.y /= (config.maxdist - config.mindist - centerDepth);
+  //currentP.y *= 1000;
+  //currentP.x *= 1000;
+  currentP.x = currentP.x * 100 / sca;
+  currentP.y = currentP.y * 100 / sca;
 
   //std::cout << "current p " << currentP << std::endl;
 
@@ -726,6 +759,6 @@ void normarizationCenterPointP(CPosPatch &patch, const CConfig &config){//, cons
   //  std::cout << "heknak go " << currentP << std::endl;
   patch.setRelativePosition(currentP);
 
-
+  return 0;
 }
 

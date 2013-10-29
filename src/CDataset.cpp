@@ -11,7 +11,7 @@ CParamset& CParamset::operator+=(const CParamset& obj){
 }
 
 CParamset& CParamset::operator/=(const float& div){
-  this->setCenterPoint(cv::Point(this->getCenterPoint().x / (int)div, this->getCenterPoint().y / (int)div));
+  this->setCenterPoint(cv::Point_<double>(this->getCenterPoint().x / (int)div, this->getCenterPoint().y / (int)div));
   double tempAngle[3];
   for(int i = 0; i < 3; ++i)
     tempAngle[i] = this->getAngle()[i] / div;

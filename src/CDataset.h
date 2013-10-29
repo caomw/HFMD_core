@@ -20,7 +20,7 @@ public:
     ~CParamset(){}
 
     int setCenterPoint(cv::Point cp){centerPoint = cp;return 0;}
-    cv::Point getCenterPoint()const{return centerPoint;}
+    cv::Point_<double> getCenterPoint()const{return centerPoint;}
 
     int setClassName(std::string name){className = name;return 0;}
     std::string getClassName()const{return className;}
@@ -107,7 +107,7 @@ public:
 
     void setClassName(std::string name){param.setClassName(name);}
     void setAngle(double* an){param.setAngle(an);}
-    void setCenterPoint(cv::Point cp){param.setCenterPoint(cp);}
+    void setCenterPoint(cv::Point_<double> cp){param.setCenterPoint(cp);}
 
     std::string getClassName(){return param.getClassName();}
     CParamset* getParam(){return &param;}
