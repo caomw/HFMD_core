@@ -479,6 +479,7 @@ double euclideanDist(cv::Point_<double> p, cv::Point_<double> q)
     detectedClass.error = minError;
     detectedClass.nearestClass = nearestObject;
     detectedClass.score = voteImage.at(c).at<float>(maxLoc.y, maxLoc.x);
+    detectedClass.centerPoint = maxLoc;
     detectResult.detectedClass.push_back(detectedClass);
   } // for every class
 
