@@ -20,6 +20,7 @@ class CConfig
 public:
     CConfig(){
         demoMode = 0;
+	tsukubaMode = 0;
     };
     ~CConfig(){};
 
@@ -127,8 +128,12 @@ public:
     std::string modelListName;
 
     int modelLearningMode;
+
+        int tsukubaMode;
+
 private:
     boost::property_tree::ptree pt;
+
 
 };
 
