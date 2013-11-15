@@ -243,21 +243,21 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
   int classNum = 0;
   cv::Mat roi;
 
-    // cv::Mat showDepth = cv::Mat(posSet[0]->img[1]->rows, posSet[0]->img[1]->cols, CV_8U);
-    // posSet[0]->img[1]->convertTo(showDepth, CV_8U, 255.0/1000.0);
+  // cv::Mat showDepth = cv::Mat(posSet[0]->img[1]->rows, posSet[0]->img[1]->cols, CV_8U);
+  // posSet[0]->img[1]->convertTo(showDepth, CV_8U, 255.0/1000.0);
     
-    // cv::namedWindow("test");
-    //    cv::imshow("test", *posSet[0]->img[0]);
-    //    cv::namedWindow("test2");
-    //    cv::imshow("test2", showDepth);
+  // cv::namedWindow("test");
+  //    cv::imshow("test", *posSet[0]->img[0]);
+  //    cv::namedWindow("test2");
+  //    cv::imshow("test2", showDepth);
 
-    //    cv::waitKey(0);
+  //    cv::waitKey(0);
 
-    //    cv::destroyWindow("test");
-    //    cv::destroyWindow("test2");
+  //    cv::destroyWindow("test");
+  //    cv::destroyWindow("test2");
 
 
-    //    std::cout << posSet[1]->img[1]->type() << " " << CV_16U << std::endl;
+  //    std::cout << posSet[1]->img[1]->type() << " " << CV_16U << std::endl;
 
   posPatch.clear();
 
@@ -299,29 +299,87 @@ void extractPosPatches(std::vector<CPosDataset*> &posSet,
 	
 
 
-	//	std::cout << centerDepthFlag << std::endl;
+	  //	std::cout << centerDepthFlag << std::endl;
 
-	//if (conf.learningMode == 2){// || pixNum > 0){
+	  //if (conf.learningMode == 2){// || pixNum > 0){
 
 	  //std::cout << tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) << std::endl;
-	if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) != 0){
-	  //	  std::cout << "test" << std::endl;
-	  //if(conf.learningMode != 2){
-	  normarizationByDepth(posTemp , conf, (double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
-	  normarizationCenterPointP(posTemp, conf, (double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
+	  if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) != 0){
+	    //	  std::cout << "test" << std::endl;
+	    //if(conf.learningMode != 2){
+	    normarizationByDepth(posTemp , conf, (double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
+	    normarizationCenterPointP(posTemp, conf, (double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
 	    //}
 
 	  
-	  //	  std::cout << "kokomade" << std::endl;
-	  //std::cout << posTemp.getRoi().width << std::endl;
+	    //	  std::cout << "kokomade" << std::endl;
+	    //std::cout << posTemp.getRoi().width << std::endl;
 
-	}
-	}
-	  if(posTemp.getRoi().width > 5 && posTemp.getRoi().height > 5){
-	    
-	    tPosPatch.push_back(posTemp);
-	    patchPerClass.at(classNum).push_back(posTemp);
 	  }
+	}
+	if(posTemp.getRoi().width > 5 && posTemp.getRoi().height > 5){
+	  std::vector<double> pRatio(0);
+	  // pRatio.push_back(1.0);
+	  // pRatio.push_back(1.4);
+	  // pRatio.push_back(1.8);
+	  // pRatio.push_back(2.2);
+	  // pRatio.push_back(2.6);
+	  // pRatio.push_back(3.0);
+	  // pRatio.push_back(3.4);
+	  // pRatio.push_back(3.8);
+	  // pRatio.push_back(4.2);
+	  // pRatio.push_back(4.6);
+	  // pRatio.push_back(5.0);
+
+	  pRatio.push_back(1.0);
+	  pRatio.push_back(1.2);
+	  pRatio.push_back(1.4);
+	  pRatio.push_back(1.6);
+	  pRatio.push_back(1.8);
+	  pRatio.push_back(2.0);
+
+	  for(uint r = 0; r < pRatio.size(); ++r){
+	    CPosPatch transPatch(posTemp);
+	    cv::Rect tempRoi = transPatch.getRoi();
+	    
+
+	    if(tempRoi.x - (int)((double)tempRoi.width * (pRatio[r] - 1.0) / 2.0)> 0)
+	      tempRoi.x -= (int)((double)tempRoi.width * (pRatio[r] - 1.0) / 2.0);
+	    else
+	      tempRoi.x = 0;
+
+	    if(tempRoi.y - (int)((double)tempRoi.height * (pRatio[r] - 1.0) / 2.0)> 0)
+	      tempRoi.y -= (int)((double)tempRoi.height * (pRatio[r] - 1.0) / 2.0);
+	    else
+	      tempRoi.y = 0;
+
+	    if(tempRoi.width * pRatio[r] + tempRoi.x < posSet.at(l)->img.at(0)->cols)
+	      tempRoi.width *= pRatio[r];
+	    else
+	      tempRoi.width = posSet.at(l)->img.at(0)->cols - tempRoi.x;
+
+	    if(tempRoi.height * pRatio[r] + tempRoi.y < posSet.at(l)->img.at(0)->rows)
+	      tempRoi.height *= pRatio[r];
+	    else
+	      tempRoi.height = posSet.at(l)->img.at(0)->rows - tempRoi.y;
+
+	    transPatch.setRoi(tempRoi);
+	    
+	    cv::Point_<double> tempRP = transPatch.getRelativePosition();
+
+	    tempRP.x /= pRatio[r];
+	    tempRP.y /= pRatio[r];
+
+	    transPatch.setRelativePosition(tempRP);
+
+	    // tPosPatch.push_back(posTemp);
+	    // patchPerClass.at(classNum).push_back(posTemp);
+
+	    tPosPatch.push_back(transPatch);
+	    patchPerClass.at(classNum).push_back(transPatch);
+
+	  }
+	}
 
 	//} // if
       }//x
@@ -427,16 +485,16 @@ void extractNegPatches(std::vector<CNegDataset*> &negSet,
 	  // centerDepthFlag = 1;
 
 	
-	if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) != 0){
-	  //if(conf.learningMode)
-	  normarizationByDepth(negTemp , conf,(double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
+	  if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) != 0){
+	    //if(conf.learningMode)
+	    normarizationByDepth(negTemp , conf,(double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
 
 
+	  }
 	}
-	}
 
-	  if(negTemp.getRoi().width > 5 && negTemp.getRoi().height > 5)
-	    tNegPatch.push_back(negTemp);
+	if(negTemp.getRoi().width > 5 && negTemp.getRoi().height > 5)
+	  tNegPatch.push_back(negTemp);
 	//}
       }//x
     }//y
@@ -550,15 +608,15 @@ void extractTestPatches(CTestDataset* testSet,std::vector<CTestPatch> &testPatch
 
 	//}
 
-      //tPatch.setPosition(j,k);
-      if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) != 0)//centerDepthFlag){
-	if(testSet->img.size() > 1)
-	  normarizationByDepth(testTemp , conf, (double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
+	//tPatch.setPosition(j,k);
+	if(tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1) != 0)//centerDepthFlag){
+	  if(testSet->img.size() > 1)
+	    normarizationByDepth(testTemp , conf, (double)tempDepth2.at<ushort>(conf.p_height / 2 + 1, conf.p_width / 2 + 1));
 
 
       }
-	if(testTemp.getRoi().width > 5 && testTemp.getRoi().height > 5)
-	  testPatch.push_back(testTemp);
+      if(testTemp.getRoi().width > 5 && testTemp.getRoi().height > 5)
+	testPatch.push_back(testTemp);
     
       //}
     }
