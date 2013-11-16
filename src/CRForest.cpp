@@ -272,7 +272,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
 	      //std::cout << "voting" << std::endl;
 	      // vote to result image
 	      if(pos.x > 0 && pos.y > 0 && pos.x < voteImage.at(cl).cols && pos.y < voteImage.at(cl).rows){
-		double v = result.at(m)->pfg.at(cl) / ( result.size() * result.at(m)->param.at(l).size()) / euclideanDist(cv::Point(), rPoint);
+		double v = result.at(m)->pfg.at(cl) / ( result.size() * result.at(m)->param.at(l).size()) / (euclideanDist(cv::Point(), rPoint) + 1);
 
 
 		voteImage.at(cl).at<float>(pos.y,pos.x) += v * 1000000;//(result.at(m)->pfg.at(c) - 0.9);// * 100;//weight * 500;
