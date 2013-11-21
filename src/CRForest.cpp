@@ -337,7 +337,7 @@ CDetectionResult CRForest::detection(CTestDataset &testSet) const{
     }
   }
 
-  cv::imshow("vote", voteImage.at(2));
+  cv::imshow("vote", voteImage.at(0));
   cv::waitKey(1);
 
   // output image to file
